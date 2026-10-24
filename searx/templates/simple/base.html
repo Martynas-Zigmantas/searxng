@@ -68,6 +68,7 @@
     {% block content %}
     {% endblock %}
   </main>
+  <template id="needle_template">{% include 'simple/elements/needle_mark.html' %}</template>
   <footer>
     <p>
     {{ instance_name }} · {{ _('Powered by') }} <a href="{{ url_for('info', pagename='about') }}">SearXNG</a> {{ searxng_version }}<br>

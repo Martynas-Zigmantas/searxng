@@ -8,6 +8,7 @@
 
 import { listen } from "../toolkit.ts";
 import { type HomePrefs, history, homePrefs, saveHomePrefs } from "../util/homeStore.ts";
+import { needle, startLoading } from "../util/loading.ts";
 
 type Shortcut = { name: string; url: string };
 type Place = { name: string; region?: string; lat: number; lon: number };
@@ -129,6 +130,7 @@ for (const chip of document.querySelectorAll<HTMLButtonElement>(".home-chips but
       setTimeout(() => searchInput?.classList.remove("home-nudge"), 600);
       return;
     }
+    startLoading();
     window.location.href = searchUrl(query, chip.dataset.cat);
   });
 }
@@ -302,7 +304,8 @@ const renderWeather = async (card: HTMLElement): Promise<void> => {
     return;
   }
 
-  card.innerHTML = `<h3>${ICON.pin}${esc(place.name)}</h3><div class="home-skeleton"></div>`;
+  card.innerHTML = `<h3>${ICON.pin}${esc(place.name)}</h3><div class="home-weather-wait"></div>`;
+  card.querySelector(".home-weather-wait")?.append(needle("Loading weather"));
   try {
     const unit = homePrefs.fahrenheit ? "f" : "c";
     const res = await fetch(`${widgetUrl("weather")}?lat=${place.lat}&lon=${place.lon}&unit=${unit}`);

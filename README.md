@@ -20,6 +20,7 @@ page full of widgets, and an app launcher for the rest of the self-hosted servic
 | **Logo** | A four-point compass star, outline only, its north tip in gold: it points you the right way. Sources in [`brand/`](brand/). |
 | **Start page** | Greeting + clock, your own shortcut tiles, weather, recent searches, a `!bang` cheat sheet, quick category chips. A **Customize** button turns each one on or off. |
 | **App launcher** | The 9-dot button top right: Mail (Epistle), Drive, Photos and Calendar (Nextcloud), Docs (BookStack), Git (Forgejo), n8n, Maps, YouTube. Edit the list in `searx/settings.yml` → `brand.custom.apps`. |
+| **Loading** | The compass needle from the logo swings round and settles while something loads: in the search button while the next page comes, in the weather card, and in place of SearXNG's spinner (infinite scroll, image viewer). `client/simple/src/js/util/loading.ts`. |
 | **Little things** | `/` focuses the search box anywhere, a copy-link button on every result, a calmer phone layout. |
 | **Privacy kept** | Shortcuts, history and your city live in *your browser's* localStorage only. Weather goes browser → Alexandria → [Open-Meteo](https://open-meteo.com) (no key, no account). |
 
@@ -56,7 +57,7 @@ stored in a cookie for this browser. To copy the same setup to your phone, use t
 | `searx/home_widgets.py` | `/widgets/geocode` + `/widgets/weather`, the server side of the weather widget. |
 | `searx/settings.yml` | Defaults baked into the image: name *Alexandria*, PWA colours, the app launcher list. |
 | `searx/static/themes/simple/` | **Built** theme (committed, like upstream). Never edit by hand, run the build. |
-| `brand/` | Logo: `src/mark.mjs` (the drawing; `N1` star is the logo, `N2` needle kept for reference), `src/logo.mjs` (renders `logo/*` + the theme's favicon / app icons). |
+| `brand/` | Logo: `src/mark.mjs` (the drawing; `N1` star is the logo, `N2` needle = the loading spinner), `src/logo.mjs` (renders `logo/*` + the theme's favicon / app icons). |
 | `deploy/` | `build-image.sh`, `alexandria.portainer.yml`, `settings.example.yml` for node2. |
 | `docs/readme/` | These images. Sources in `docs/readme/src/`. |
 | everything else | Upstream SearXNG, unchanged. |

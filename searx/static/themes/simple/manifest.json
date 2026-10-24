@@ -3,10 +3,6 @@
     "file": "chunk/BuurKv-k.min.js",
     "name": "plugin"
   },
-  "_CagXqC45.min.js": {
-    "file": "chunk/CagXqC45.min.js",
-    "name": "homestore"
-  },
   "_DK4yUVpy.min.js": {
     "file": "chunk/DK4yUVpy.min.js",
     "name": "assertelement"
@@ -17,6 +13,10 @@
     "imports": [
       "_DK4yUVpy.min.js"
     ]
+  },
+  "_DsGUJur6.min.js": {
+    "file": "chunk/DsGUJur6.min.js",
+    "name": "loading"
   },
   "src/fonts/plus-jakarta-sans-latin-wght-normal.woff2": {
     "file": "sxng-plus-jakarta-sans-latin-wght-normal.woff2",
@@ -51,23 +51,23 @@
     ]
   },
   "src/js/main/extras.ts": {
-    "file": "chunk/EGwK48vo.min.js",
+    "file": "chunk/LcueWPcf.min.js",
     "name": "extras",
     "src": "src/js/main/extras.ts",
     "isDynamicEntry": true,
     "imports": [
       "src/js/index.ts",
-      "_CagXqC45.min.js"
+      "_DsGUJur6.min.js"
     ]
   },
   "src/js/main/home.ts": {
-    "file": "chunk/Dc7hxDO7.min.js",
+    "file": "chunk/BQgJOCht.min.js",
     "name": "home",
     "src": "src/js/main/home.ts",
     "isDynamicEntry": true,
     "imports": [
       "src/js/index.ts",
-      "_CagXqC45.min.js"
+      "_DsGUJur6.min.js"
     ]
   },
   "src/js/main/keyboard.ts": {

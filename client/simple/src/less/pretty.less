@@ -718,12 +718,14 @@ footer {
 @media (prefers-color-scheme: dark) {
   :root.theme-auto {
     .pretty-dark-shortcuts();
+    .pretty-dark-loader();
   }
 }
 
 :root.theme-dark,
 :root.theme-black {
   .pretty-dark-shortcuts();
+  .pretty-dark-loader();
 }
 
 .home-cards {
@@ -1802,6 +1804,114 @@ button.category_button.selected {
     font: 500 0.9rem var(--p-font);
     padding: 0.65rem 1.5rem;
     cursor: pointer;
+  }
+}
+
+/// Loading: the compass needle (logo N2) swings round and settles ----------
+
+@keyframes p-needle {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  45% {
+    transform: rotate(400deg);
+  }
+
+  62% {
+    transform: rotate(338deg);
+  }
+
+  78% {
+    transform: rotate(372deg);
+  }
+
+  90% {
+    transform: rotate(356deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.needle-mark {
+  display: block;
+  width: 100%;
+  height: 100%;
+  transform-origin: 50% 50%;
+  animation: p-needle 1.8s cubic-bezier(0.45, 0, 0.3, 1) infinite;
+}
+
+.needle-loading {
+  display: inline-grid;
+  place-items: center;
+  width: 2.4rem;
+  height: 2.4rem;
+  color: var(--p-mark);
+}
+
+.home-weather-wait {
+  display: grid;
+  place-items: center;
+  height: 5.5rem;
+}
+
+// search button: magnifier -> needle while the next page loads
+#send_search .needle-spin {
+  display: none;
+  width: 1.35rem;
+  height: 1.35rem;
+  color: var(--p-mark);
+}
+
+html.is-loading #send_search {
+  .needle-spin {
+    display: inline-block;
+  }
+
+  .needle-spin ~ .show_if_nojs,
+  > .hide_if_nojs:first-child {
+    display: none;
+  }
+}
+
+html.is-loading #urls,
+html.is-loading #home_widgets {
+  opacity: 0.5;
+  transition: opacity 0.25s 0.15s;
+}
+
+// the stock spinner (infinite scroll, image viewer) becomes the needle too
+.loader,
+.loader::after {
+  border-radius: 0;
+  width: 2.6rem;
+  height: 2.6rem;
+}
+
+.loader {
+  margin: 1.5rem auto;
+  font-size: inherit;
+  border: 0 !important;
+  background: data-uri("image/svg+xml;charset=UTF-8", "../svg/needle-light.svg")
+    center / contain no-repeat;
+  animation: p-needle 1.8s cubic-bezier(0.45, 0, 0.3, 1) infinite;
+}
+
+.pretty-dark-loader() {
+  .loader {
+    background-image: data-uri(
+      "image/svg+xml;charset=UTF-8",
+      "../svg/needle-dark.svg"
+    );
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .needle-mark,
+  .loader {
+    animation-duration: 4s;
   }
 }
 

@@ -8,6 +8,7 @@
 
 import { Endpoints, endpoint, listen } from "../toolkit.ts";
 import { history } from "../util/homeStore.ts";
+import { startLoading, stopLoading } from "../util/loading.ts";
 
 /* ------------------------------------------------------------ app launcher */
 
@@ -36,6 +37,40 @@ if (launcher) {
     });
   }
 }
+
+/* ------------------------------------------------------ loading needle */
+
+// any search (search box, category tabs, filters, pagination, suggestions) is a form submit
+document.addEventListener(
+  "submit",
+  (event: Event) => {
+    // widget forms (add shortcut, ...) stay on the page
+    if (!(event.target as HTMLElement).closest(".home-widgets")) startLoading();
+  },
+  true
+);
+
+// same-tab clicks on links inside this site (recent searches, prefs, logo, ...)
+document.addEventListener("click", (event: MouseEvent) => {
+  if (
+    event.defaultPrevented ||
+    event.button !== 0 ||
+    event.metaKey ||
+    event.ctrlKey ||
+    event.shiftKey ||
+    event.altKey
+  ) {
+    return;
+  }
+  const link = (event.target as HTMLElement).closest<HTMLAnchorElement>("a[href]");
+  if (!link || link.target === "_blank" || link.hasAttribute("download")) return;
+  const url = new URL(link.href, window.location.href);
+  if (url.origin !== window.location.origin || (url.pathname === window.location.pathname && url.hash)) return;
+  startLoading();
+});
+
+// back/forward cache restores the page as it was: drop the needle
+window.addEventListener("pageshow", stopLoading);
 
 /* --------------------------------------------------------- "/" focuses box */
 
