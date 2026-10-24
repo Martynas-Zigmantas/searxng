@@ -119,6 +119,10 @@ Alexandria keeps its changes in a few separate files (`pretty.less`, `home.ts`, 
 `apps.html`) so upstream merges stay small. If a merge conflicts in `searx/static/themes/simple/`, take either
 side and rebuild.
 
+**No symlinks.** Portainer refuses to clone a repo that contains one ("repository contains a symlink"). Upstream's
+`utils/templates/etc/apache2 → httpd` is a real copy here. After every merge:
+`git ls-files -s | awk '$1=="120000"'` must print nothing; replace anything it lists with a copy.
+
 ## Licence
 
 AGPL-3.0-or-later, like SearXNG. The source is at https://git.jack-sally.com/Martynas-Cloud/searxng and linked
