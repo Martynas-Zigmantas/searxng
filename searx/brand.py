@@ -24,6 +24,11 @@ class BrandApp(msgspec.Struct, kw_only=True, forbid_unknown_fields=True):
     """Start colour of the tile gradient."""
     color2: str = ""
     """End colour of the tile gradient (defaults to ``color``)."""
+    logo: str = ""
+    """A brand logo from ``simple/elements/app_logos.html`` (e.g. nextcloud, forgejo), drawn
+    white on the tile instead of ``icon``."""
+    badge: str = ""
+    """A brand logo shown small in the tile's corner, e.g. nextcloud on Photos / Calendar."""
 
 
 class BrandCustom(msgspec.Struct, kw_only=True, forbid_unknown_fields=True):

@@ -304,6 +304,7 @@ footer {
 }
 
 .app-tile-icon {
+  position: relative;
   display: grid;
   place-items: center;
   width: 3rem;
@@ -323,6 +324,34 @@ footer {
     stroke-width: 1.7;
     stroke-linecap: round;
     stroke-linejoin: round;
+  }
+}
+
+.app-tile-icon svg.app-logo {
+  fill: #fff;
+  stroke: none;
+  width: 1.7rem;
+  height: 1.7rem;
+}
+
+// a small brand mark in the corner (Photos / Calendar are Nextcloud apps)
+.app-badge {
+  position: absolute;
+  right: -0.3rem;
+  bottom: -0.3rem;
+  display: grid;
+  place-items: center;
+  width: 1.3rem;
+  height: 1.3rem;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 25%);
+
+  svg {
+    width: 0.95rem !important;
+    height: 0.95rem !important;
+    fill: #0082c9 !important;
+    stroke: none !important;
   }
 }
 

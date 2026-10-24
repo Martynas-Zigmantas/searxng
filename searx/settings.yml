@@ -29,17 +29,19 @@ brand:
     #   About: "https://searxng.org"
     #
     # App launcher (grid button top right).  icon: mail, drive, photos,
-    # calendar, docs, git, flow, maps, video, link, epistle
+    # calendar, docs, git, flow, maps, video, link, epistle.  logo: a brand logo from
+    # simple/elements/app_logos.html (nextcloud, bookstack, forgejo, n8n, openstreetmap,
+    # youtube), drawn instead of the icon; badge: the same, small in the corner.
     apps:
       - {name: Mail, url: "https://webmail.kodatrade.co.uk", icon: epistle, color: "#6B1D52", color2: "#2A0820"}
-      - {name: Drive, url: "https://cloud.jack-sally.com/apps/files", icon: drive, color: "#0082c9", color2: "#00c2ff"}
-      - {name: Photos, url: "https://cloud.jack-sally.com/apps/photos", icon: photos, color: "#f9b208", color2: "#ff5e7e"}
-      - {name: Calendar, url: "https://cloud.jack-sally.com/apps/calendar", icon: calendar, color: "#3d7bff", color2: "#7b5cff"}
-      - {name: Docs, url: "https://docs.jack-sally.com", icon: docs, color: "#0ba360", color2: "#3cba92"}
-      - {name: Git, url: "https://git.jack-sally.com", icon: git, color: "#ff7a18", color2: "#d63c00"}
-      - {name: n8n, url: "https://n8n.jack-sally.com", icon: flow, color: "#ea4b71", color2: "#a52bd8"}
-      - {name: Maps, url: "https://www.openstreetmap.org", icon: maps, color: "#12c2a0", color2: "#2a7fff"}
-      - {name: YouTube, url: "https://www.youtube.com", icon: video, color: "#ff3b3b", color2: "#c00000"}
+      - {name: Drive, url: "https://cloud.jack-sally.com/apps/files", logo: nextcloud, color: "#0082C9", color2: "#00639a"}
+      - {name: Photos, url: "https://cloud.jack-sally.com/apps/photos", icon: photos, badge: nextcloud, color: "#0082C9", color2: "#00639a"}
+      - {name: Calendar, url: "https://cloud.jack-sally.com/apps/calendar", icon: calendar, badge: nextcloud, color: "#0082C9", color2: "#00639a"}
+      - {name: Docs, url: "https://docs.jack-sally.com", logo: bookstack, color: "#0288D1", color2: "#01579b"}
+      - {name: Git, url: "https://git.jack-sally.com", logo: forgejo, color: "#FB923C", color2: "#d4540f"}
+      - {name: n8n, url: "https://n8n.jack-sally.com", logo: n8n, color: "#EA4B71", color2: "#b9294d"}
+      - {name: Maps, url: "https://www.openstreetmap.org", logo: openstreetmap, color: "#7EBC6F", color2: "#4e8f40"}
+      - {name: YouTube, url: "https://www.youtube.com", logo: youtube, color: "#FF0000", color2: "#c00000"}
   # PWA icon colours used in manifest.json (Alexandria: Epistle plum + white)
   pwa_colors:
     theme_color_light: "#4A1238"

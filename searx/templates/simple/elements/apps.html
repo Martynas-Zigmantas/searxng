@@ -12,6 +12,7 @@
   "video": '<rect x="3.5" y="6" width="17" height="12" rx="3.5"/><path d="m10.5 9.5 4 2.5-4 2.5z" fill="currentColor"/>',
   "link": '<path d="M10 14a4 4 0 0 0 5.66 0l3-3a4 4 0 0 0-5.66-5.66l-1 1M14 10a4 4 0 0 0-5.66 0l-3 3a4 4 0 0 0 5.66 5.66l1-1"/>',
 } -%}
+{%- from 'simple/elements/app_logos.html' import app_logos -%}
 {%- set apps = get_setting('brand.custom.apps') or [] -%}
 {%- if apps -%}
 <div class="app-launcher">
@@ -24,7 +25,16 @@
     <div class="app-launcher-grid">
     {%- for app in apps %}
       <a class="app-tile" role="menuitem" href="{{ app.url }}" rel="noreferrer" style="--app-a: {{ app.color }}; --app-b: {{ app.color2 or app.color }}">
-        <span class="app-tile-icon"><svg viewBox="0 0 24 24" aria-hidden="true">{{ (app_glyphs[app.icon] or app_glyphs['link'])|safe }}</svg></span>
+        <span class="app-tile-icon">
+          {%- if app.logo and app_logos[app.logo] -%}
+          <svg class="app-logo" viewBox="0 0 24 24" aria-hidden="true"><path d="{{ app_logos[app.logo] }}"/></svg>
+          {%- else -%}
+          <svg viewBox="0 0 24 24" aria-hidden="true">{{ (app_glyphs[app.icon] or app_glyphs['link'])|safe }}</svg>
+          {%- endif -%}
+          {%- if app.badge and app_logos[app.badge] -%}
+          <span class="app-badge"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="{{ app_logos[app.badge] }}"/></svg></span>
+          {%- endif -%}
+        </span>
         <span class="app-tile-name">{{ app.name }}</span>
       </a>
     {%- endfor %}
