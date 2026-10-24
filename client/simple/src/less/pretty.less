@@ -455,13 +455,11 @@ footer {
 
 #main_index {
   margin-top: 0;
-  min-height: calc(100vh - 6rem);
-  display: flex;
-  flex-direction: column;
 }
 
+// the page grows with the widgets; min-height keeps the footer at the bottom on tall screens
 .index {
-  flex: 1;
+  min-height: calc(100vh - 6rem);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -853,6 +851,28 @@ footer {
   }
 }
 
+.home-near {
+  margin-left: 0.15rem;
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  background: var(--p-accent-soft);
+  color: var(--p-accent);
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+.home-use-location {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 0.6rem 0 0 -0.5rem;
+
+  svg {
+    width: 0.95rem;
+    height: 0.95rem;
+  }
+}
+
 .home-place-search {
   position: relative;
   margin-top: 0.75rem;
@@ -1039,67 +1059,6 @@ footer {
   }
 }
 
-.home-bang-mark {
-  display: grid;
-  place-items: center;
-  width: 1.15rem;
-  height: 1.15rem;
-  border-radius: 5px;
-  background: var(--p-accent);
-  color: var(--p-on-accent);
-  font-size: 0.75rem;
-  font-weight: 700;
-}
-
-.home-bangs {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: 0.1rem;
-  list-style: none;
-  margin: 0.75rem 0 0;
-  padding: 0;
-
-  button {
-    display: flex;
-    align-items: center;
-    gap: 0.45rem;
-    width: 100%;
-    padding: 0.35rem 0.45rem;
-    border: 0;
-    border-radius: 8px;
-    background: transparent;
-    color: var(--p-text-2);
-    font: 0.78rem var(--p-font);
-    text-align: left;
-    cursor: pointer;
-
-    &:hover {
-      background: var(--p-surface-3);
-      color: var(--p-text);
-    }
-  }
-
-  code {
-    flex: none;
-    min-width: 2.6rem;
-    padding: 0.1rem 0.35rem;
-    border-radius: 6px;
-    background: var(--p-bg);
-    color: var(--p-accent);
-    font:
-      600 0.75rem ui-monospace,
-      "SF Mono",
-      "Cascadia Code",
-      monospace;
-  }
-
-  span {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-}
-
 .home-shortcut-form {
   align-self: center;
   width: 100%;
@@ -1204,7 +1163,7 @@ body.results_endpoint {
     padding-top: 1.1rem;
     padding-bottom: 0;
     background: var(--p-bg);
-    border-bottom: 0;
+    border-bottom: 1px solid var(--p-border);
     gap: 0.75rem 1.4rem;
     grid-template-columns: auto 1fr;
     .ltr-padding-left(2rem);
@@ -1859,7 +1818,7 @@ button.category_button.selected {
 
 // search button: magnifier -> needle while the next page loads
 #send_search .needle-spin {
-  display: none;
+  display: none !important;
   width: 1.35rem;
   height: 1.35rem;
   color: var(--p-mark);
@@ -1867,7 +1826,7 @@ button.category_button.selected {
 
 html.is-loading #send_search {
   .needle-spin {
-    display: inline-block;
+    display: inline-block !important;
   }
 
   .needle-spin ~ .show_if_nojs,

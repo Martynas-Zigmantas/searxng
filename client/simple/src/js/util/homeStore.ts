@@ -10,7 +10,6 @@ export type HomePrefs = {
   shortcuts: boolean;
   weather: boolean;
   recent: boolean;
-  bangs: boolean;
   remember: boolean;
   fahrenheit: boolean;
 };
@@ -24,7 +23,6 @@ const DEFAULTS: HomePrefs = {
   shortcuts: true,
   weather: true,
   recent: true,
-  bangs: true,
   remember: true,
   fahrenheit: false
 };

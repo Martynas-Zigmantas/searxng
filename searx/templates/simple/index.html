@@ -15,6 +15,6 @@
             <button type="button" data-cat="it">{{ icon_big('layers') }}<span>{{ _('it')|upper }}</span></button>
         </div>
     </div>
-    <section id="home_widgets" class="home-widgets hide_if_nojs" data-geocode-url="{{ url_for('widgets_geocode') }}" data-weather-url="{{ url_for('widgets_weather') }}" aria-label="{{ _('Widgets') }}"></section>
+    <section id="home_widgets" class="home-widgets hide_if_nojs" data-geocode-url="{{ url_for('widgets_geocode') }}" data-weather-url="{{ url_for('widgets_weather') }}" data-locate-url="{{ url_for('widgets_locate') }}" aria-label="{{ _('Widgets') }}"></section>
 </div>
 {% endblock %}

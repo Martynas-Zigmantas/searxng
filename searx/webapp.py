@@ -1013,6 +1013,7 @@ def preferences():
 app.add_url_rule('/favicon_proxy', methods=['GET'], endpoint="favicon_proxy", view_func=favicons.favicon_proxy)
 app.add_url_rule('/widgets/geocode', methods=['GET'], endpoint="widgets_geocode", view_func=home_widgets.geocode)
 app.add_url_rule('/widgets/weather', methods=['GET'], endpoint="widgets_weather", view_func=home_widgets.weather)
+app.add_url_rule('/widgets/locate', methods=['GET'], endpoint="widgets_locate", view_func=home_widgets.locate)
 
 
 @app.route('/image', methods=['GET'])

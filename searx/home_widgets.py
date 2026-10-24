@@ -2,12 +2,21 @@
 """Small JSON endpoints that feed the widgets on the start page.
 
 The browser never talks to a third party: it asks this instance, and the
-instance asks Open-Meteo (no API key, no account).  Only a city name or a
-pair of coordinates the user typed in leave the server.
+instance asks Open-Meteo (no API key, no account).
 
 - ``/widgets/geocode?q=<city>``  ->  up to 5 matching places
 - ``/widgets/weather?lat=<lat>&lon=<lon>``  ->  current weather + 3 days
+- ``/widgets/locate``  ->  the rough location (city) of the visitor's IP
+
+``/widgets/locate`` is the one exception to "only what the user typed": the
+server asks ipwho.is (fallback ip-api.com) where the visitor's IP address is,
+so the weather card works without picking a city.  Private / VPN addresses
+can't be located, then the server's own public IP is used (same region for a
+home server).  Results are cached in memory for 6 hours per IP.
 """
+
+import ipaddress
+import time
 
 import flask
 from flask.json import jsonify
@@ -15,6 +24,8 @@ from flask.json import jsonify
 from searx.network import get as http_get
 
 GEOCODE_URL = "https://geocoding-api.open-meteo.com/v1/search"
+LOCATE_TTL = 6 * 3600
+_locate_cache: dict[str, tuple[float, dict]] = {}
 FORECAST_URL = "https://api.open-meteo.com/v1/forecast"
 
 
@@ -111,3 +122,63 @@ def weather():
         ),
         600,
     )
+
+
+def _visitor_ip() -> str | None:
+    """Public IP of the visitor, or None for private / VPN / loopback addresses."""
+    candidates = [flask.request.remote_addr or ""]
+    candidates += [x.strip() for x in flask.request.headers.get("X-Forwarded-For", "").split(",")]
+    candidates.append(flask.request.headers.get("X-Real-IP", ""))
+    for raw in candidates:
+        try:
+            ip = ipaddress.ip_address(raw)
+        except ValueError:
+            continue
+        if ip.is_global:
+            return str(ip)
+    return None
+
+
+def _lookup(ip: str | None) -> dict | None:
+    target = ip or ""
+    try:
+        data = http_get(f"https://ipwho.is/{target}", timeout=4).json()
+        if data.get("success"):
+            return {
+                "name": data.get("city") or data.get("region"),
+                "region": ", ".join(x for x in (data.get("region"), data.get("country")) if x),
+                "lat": data.get("latitude"),
+                "lon": data.get("longitude"),
+            }
+    except Exception:  # pylint: disable=broad-except
+        pass
+    try:
+        data = http_get(
+            f"http://ip-api.com/json/{target}", params={"fields": "status,city,regionName,country,lat,lon"}, timeout=4
+        ).json()
+        if data.get("status") == "success":
+            return {
+                "name": data.get("city") or data.get("regionName"),
+                "region": ", ".join(x for x in (data.get("regionName"), data.get("country")) if x),
+                "lat": data.get("lat"),
+                "lon": data.get("lon"),
+            }
+    except Exception:  # pylint: disable=broad-except
+        pass
+    return None
+
+
+def locate():
+    ip = _visitor_ip()
+    key = ip or "server"
+    hit = _locate_cache.get(key)
+    if hit and time.time() - hit[0] < LOCATE_TTL:
+        place = hit[1]
+    else:
+        place = _lookup(ip)
+        if not place or place.get("lat") is None:
+            return jsonify({"error": "location unavailable"}), 502
+        if len(_locate_cache) > 1000:
+            _locate_cache.clear()
+        _locate_cache[key] = (time.time(), place)
+    return _cached(jsonify({**place, "approximate": True}), 3600)

@@ -18,11 +18,12 @@ page full of widgets, and an app launcher for the rest of the self-hosted servic
 |---|---|
 | **Look** | Google-clean layout: white + Epistle plum (dark mode is plum), Plus Jakarta Sans (bundled, no Google Fonts call), pill search box with a plum focus ring, sticky results header, site icons, knowledge panel as a card. On phones the search box stays a pill with a dropdown (stock SearXNG went full-screen white). |
 | **Logo** | A four-point compass star, outline only, its north tip in gold: it points you the right way. Sources in [`brand/`](brand/). |
-| **Start page** | Greeting + clock, your own shortcut tiles, weather, recent searches, a `!bang` cheat sheet, quick category chips. A **Customize** button turns each one on or off. |
+| **Start page** | Greeting + clock, your own shortcut tiles, weather (follows your rough location from your IP until you pick a city), recent searches, quick category chips. A **Customize** button turns each one on or off. |
 | **App launcher** | The 9-dot button top right: Mail (Epistle), Drive, Photos and Calendar (Nextcloud), Docs (BookStack), Git (Forgejo), n8n, Maps, YouTube. Edit the list in `searx/settings.yml` → `brand.custom.apps`. |
 | **Loading** | The compass needle from the logo swings round and settles while something loads: in the search button while the next page comes, in the weather card, and in place of SearXNG's spinner (infinite scroll, image viewer). `client/simple/src/js/util/loading.ts`. |
+| **Less clutter** | No About link, no language / time / SafeSearch row on results (the defaults come from Preferences). |
 | **Little things** | `/` focuses the search box anywhere, a copy-link button on every result, a calmer phone layout. |
-| **Privacy kept** | Shortcuts, history and your city live in *your browser's* localStorage only. Weather goes browser → Alexandria → [Open-Meteo](https://open-meteo.com) (no key, no account). |
+| **Privacy kept** | Shortcuts, history and your city live in *your browser's* localStorage only. Weather goes browser → Alexandria → [Open-Meteo](https://open-meteo.com) (no key, no account). For *near you*, Alexandria asks [ipwho.is](https://ipwho.is) (fallback ip-api.com) where your IP is, cached 6 h; on the VPN it sees a private address and uses the server's own IP instead. |
 
 ## How a search works
 
@@ -43,7 +44,7 @@ via OpenSearch).
 stored in a cookie for this browser. To copy the same setup to your phone, use the link under Preferences →
 **Cookies**. Instance-wide defaults go in `settings.yml` (`engines:` → `disabled: true|false`).
 
-**Search shortcuts:** `!g rust` = Google only, `!w` Wikipedia, `!yt` YouTube, `!gh` GitHub, `:en` English results,
+**Search shortcuts (bangs):** `!g rust` = Google only, `!w` Wikipedia, `!yt` YouTube, `!gh` GitHub, `:en` English results,
 `!!g` jumps straight to Google. The full list is in Preferences → Engines.
 
 ## Repo layout
@@ -54,7 +55,7 @@ stored in a cookie for this browser. To copy the same setup to your phone, use t
 | `client/simple/src/js/main/home.ts` | Start page widgets. `extras.ts`: launcher, `/` hotkey, copy link, history. `util/homeStore.ts`: localStorage. |
 | `client/simple/src/fonts/` | Plus Jakarta Sans, variable (OFL). |
 | `searx/templates/simple/` | `index.html` (start page), `elements/apps.html` (launcher), `elements/brand_mark.html` (generated logo). |
-| `searx/home_widgets.py` | `/widgets/geocode` + `/widgets/weather`, the server side of the weather widget. |
+| `searx/home_widgets.py` | `/widgets/geocode`, `/widgets/weather`, `/widgets/locate` (IP → rough location): the server side of the weather widget. |
 | `searx/settings.yml` | Defaults baked into the image: name *Alexandria*, PWA colours, the app launcher list. |
 | `searx/static/themes/simple/` | **Built** theme (committed, like upstream). Never edit by hand, run the build. |
 | `brand/` | Logo: `src/mark.mjs` (the drawing; `N1` star is the logo, `N2` needle = the loading spinner), `src/logo.mjs` (renders `logo/*` + the theme's favicon / app icons). |

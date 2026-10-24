@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 /*
- * Start page widgets: greeting + clock, shortcuts, weather, recent searches
- * and a !bang cheat sheet.  Everything is stored in this browser's
+ * Start page widgets: greeting + clock, shortcuts, weather and recent
+ * searches.  Everything is stored in this browser's
  * localStorage only; weather goes through this instance (/widgets/*).
  */
 
@@ -11,7 +11,7 @@ import { type HomePrefs, history, homePrefs, saveHomePrefs } from "../util/homeS
 import { needle, startLoading } from "../util/loading.ts";
 
 type Shortcut = { name: string; url: string };
-type Place = { name: string; region?: string; lat: number; lon: number };
+type Place = { name: string; region?: string; lat: number; lon: number; auto?: boolean; at?: number };
 type Weather = {
   unit: string;
   temp: number;
@@ -35,16 +35,6 @@ const DEFAULT_SHORTCUTS: Shortcut[] = [
   { name: "Hacker News", url: "https://news.ycombinator.com" }
 ];
 
-const BANGS: [string, string][] = [
-  ["!g", "Google only"],
-  ["!w", "Wikipedia"],
-  ["!yt", "YouTube"],
-  ["!gh", "GitHub"],
-  ["!re", "Reddit"],
-  [":en", "Results in English"],
-  ["!!g", "Jump straight to Google"]
-];
-
 const ICON = {
   edit: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4zM14 6l4 4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
   plus: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
@@ -62,7 +52,6 @@ const GREETINGS: [number, string][] = [
 ];
 const WWW_RE = /^www\./;
 const HTTP_RE = /^https?:\/\//i;
-const BANG_RE = /^[!:]\S+\s*/;
 
 const root = document.getElementById("home_widgets");
 const searchInput = document.getElementById("q") as HTMLInputElement | null;
@@ -248,13 +237,40 @@ const wmo = (code: number, isDay = 1): [string, string] => {
   return [code === 0 && !isDay ? "🌙" : icon, text];
 };
 
-const widgetUrl = (kind: "geocode" | "weather"): string =>
-  (kind === "geocode" ? root?.dataset.geocodeUrl : root?.dataset.weatherUrl) ?? `./widgets/${kind}`;
+const WIDGET_URLS = { geocode: "geocodeUrl", weather: "weatherUrl", locate: "locateUrl" } as const;
+const widgetUrl = (kind: keyof typeof WIDGET_URLS): string => root?.dataset[WIDGET_URLS[kind]] ?? `./widgets/${kind}`;
+
+const AUTO_TTL = 6 * 3600 * 1000;
+
+// a city the user picked wins; otherwise the rough location of their IP (asked from this server, cached 6 h)
+const resolvePlace = async (): Promise<Place | null> => {
+  const saved = readJSON<Place | null>(PLACE_KEY, null);
+  if (saved && !saved.auto) return saved;
+  if (saved?.auto && Date.now() - (saved.at ?? 0) < AUTO_TTL) return saved;
+  try {
+    const res = await fetch(widgetUrl("locate"));
+    if (!res.ok) throw new Error(String(res.status));
+    const found = (await res.json()) as Place;
+    const place: Place = {
+      name: found.name,
+      region: found.region,
+      lat: found.lat,
+      lon: found.lon,
+      auto: true,
+      at: Date.now()
+    };
+    writeJSON(PLACE_KEY, place);
+    return place;
+  } catch {
+    return saved;
+  }
+};
 
 const renderWeatherSetup = (card: HTMLElement): void => {
   card.innerHTML = `
     <h3>${ICON.pin}Weather</h3>
-    <p class="home-muted">Pick a city to see the forecast. It's stored in this browser only.</p>
+    <p class="home-muted">Pick a city, or let it follow your rough location (from your IP address). Stored in this browser only.</p>
+    <button type="button" class="home-link-btn home-use-location" data-auto>${ICON.pin}Use my location</button>
     <div class="home-place-search">
       <input type="text" placeholder="Search a city…" aria-label="City" autocomplete="off">
       <ul class="home-place-results" role="listbox"></ul>
@@ -262,6 +278,11 @@ const renderWeatherSetup = (card: HTMLElement): void => {
   const input = card.querySelector("input") as HTMLInputElement;
   const list = card.querySelector("ul") as HTMLUListElement;
   let timer: number | undefined;
+
+  listen("click", card.querySelector("[data-auto]") as HTMLElement, () => {
+    localStorage.removeItem(PLACE_KEY);
+    void renderWeather(card);
+  });
 
   listen("input", input, () => {
     window.clearTimeout(timer);
@@ -298,14 +319,14 @@ const renderWeatherSetup = (card: HTMLElement): void => {
 };
 
 const renderWeather = async (card: HTMLElement): Promise<void> => {
-  const place = readJSON<Place | null>(PLACE_KEY, null);
+  card.innerHTML = `<h3>${ICON.pin}Weather</h3><div class="home-weather-wait"></div>`;
+  card.querySelector(".home-weather-wait")?.append(needle("Loading weather"));
+  const place = await resolvePlace();
   if (!place) {
     renderWeatherSetup(card);
     return;
   }
-
-  card.innerHTML = `<h3>${ICON.pin}${esc(place.name)}</h3><div class="home-weather-wait"></div>`;
-  card.querySelector(".home-weather-wait")?.append(needle("Loading weather"));
+  const title = `${esc(place.name)}${place.auto ? '<span class="home-near">near you</span>' : ""}`;
   try {
     const unit = homePrefs.fahrenheit ? "f" : "c";
     const res = await fetch(`${widgetUrl("weather")}?lat=${place.lat}&lon=${place.lon}&unit=${unit}`);
@@ -322,7 +343,7 @@ const renderWeather = async (card: HTMLElement): Promise<void> => {
       .join("");
     const [today] = w.days;
     card.innerHTML = `
-      <h3>${ICON.pin}${esc(place.name)}
+      <h3>${ICON.pin}${title}
         <button type="button" class="home-icon-btn" data-change title="Change city" aria-label="Change city">${ICON.edit}</button>
       </h3>
       <div class="home-weather-now">
@@ -336,12 +357,11 @@ const renderWeather = async (card: HTMLElement): Promise<void> => {
       </div>
       <ul class="home-weather-days">${days}</ul>`;
     listen("click", card.querySelector("[data-change]") as HTMLElement, () => {
-      localStorage.removeItem(PLACE_KEY);
       renderWeatherSetup(card);
       (card.querySelector("input") as HTMLInputElement).focus();
     });
   } catch {
-    card.innerHTML = `<h3>${ICON.pin}${esc(place.name)}</h3><p class="home-muted">Weather is unavailable right now.</p>`;
+    card.innerHTML = `<h3>${ICON.pin}${title}</h3><p class="home-muted">Weather is unavailable right now.</p>`;
   }
 };
 
@@ -380,23 +400,6 @@ const renderRecent = (card: HTMLElement): void => {
   });
 };
 
-/* ------------------------------------------------------------------- bangs */
-
-const renderBangs = (card: HTMLElement): void => {
-  card.innerHTML = `<h3><span class="home-bang-mark">!</span>Search shortcuts</h3>
-    <p class="home-muted">Type these in front of a query.</p>
-    <ul class="home-bangs">${BANGS.map(([bang, what]) => `<li><button type="button" data-bang="${esc(bang)}"><code>${esc(bang)}</code><span>${esc(what)}</span></button></li>`).join("")}</ul>`;
-  for (const button of card.querySelectorAll<HTMLButtonElement>("[data-bang]")) {
-    listen("click", button, () => {
-      if (!searchInput) return;
-      const query = searchInput.value.replace(BANG_RE, "");
-      searchInput.value = `${button.dataset.bang} ${query}`;
-      searchInput.focus();
-      searchInput.setSelectionRange(searchInput.value.length, searchInput.value.length);
-    });
-  }
-};
-
 /* --------------------------------------------------------------- customize */
 
 const TOGGLES: [keyof HomePrefs, string][] = [
@@ -404,7 +407,6 @@ const TOGGLES: [keyof HomePrefs, string][] = [
   ["shortcuts", "Shortcuts"],
   ["weather", "Weather"],
   ["recent", "Recent searches"],
-  ["bangs", "Search shortcuts (!bangs)"],
   ["remember", "Remember my searches"],
   ["fahrenheit", "Use °F"]
 ];
@@ -462,11 +464,6 @@ const render = (keepPanelOpen = false): void => {
   if (homePrefs.recent) {
     const card = el('<article class="home-card"></article>');
     renderRecent(card);
-    cards.append(card);
-  }
-  if (homePrefs.bangs) {
-    const card = el('<article class="home-card"></article>');
-    renderBangs(card);
     cards.append(card);
   }
   if (cards.childElementCount) root.append(cards);
