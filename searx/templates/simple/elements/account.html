@@ -1,0 +1,26 @@
+{#- The Alexandria account (searx/accounts.py): "Sign in" when signed out, the avatar + account card when signed in -#}
+{%- macro avatar(account, cls) -%}
+<span class="{{ cls }}" aria-hidden="true">
+  <span class="account-initial">{{ (account.given_name or account.name or account.email or '?')[:1]|upper }}</span>
+  {%- if account.picture -%}<img src="{{ account.picture }}" alt="" referrerpolicy="no-referrer" onerror="this.remove()">{%- endif -%}
+</span>
+{%- endmacro -%}
+{%- if account -%}
+<div class="account-menu" data-sync-url="{{ url_for('account_data') }}">
+  <button type="button" class="account-btn" aria-haspopup="true" aria-expanded="false" aria-controls="account_panel" title="{{ _('Alexandria account') }}&#10;{{ account.name }}&#10;{{ account.email }}">
+    {{- avatar(account, 'account-avatar') -}}
+  </button>
+  <div id="account_panel" class="account-panel" role="menu" hidden>
+    <div class="account-card">
+      <div class="account-email">{{ account.email }}</div>
+      {{- avatar(account, 'account-avatar account-avatar-big') -}}
+      <div class="account-hello">{{ _('Hi, %(name)s!', name=account.given_name or account.name) }}</div>
+      <a class="account-manage" role="menuitem" href="{{ account_manage_url }}">{{ _('Manage your Alexandria account') }}</a>
+    </div>
+    <div class="account-sync"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 12a7.5 7.5 0 0 1 13-5.1M19.5 12a7.5 7.5 0 0 1-13 5.1"/><path d="M17.8 3.4v3.7h-3.7M6.2 20.6v-3.7h3.7"/></svg><div>{{ _('Shortcuts, recent searches and your weather city follow you on every device you sign in on.') }}</div></div>
+    <a class="account-signout" role="menuitem" href="{{ url_for('account_logout') }}">{{ _('Sign out') }}</a>
+  </div>
+</div>
+{%- elif accounts_enabled -%}
+<a class="account-signin" href="{{ url_for('account_login') }}?next={{ request.full_path.rstrip('?')|urlencode }}">{{ _('Sign in') }}</a>
+{%- endif -%}

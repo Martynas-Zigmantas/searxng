@@ -42,6 +42,7 @@ const write = (key: string, value: unknown): void => {
   } catch {
     // storage disabled
   }
+  window.dispatchEvent(new Event("alexandria:store"));
 };
 
 export const homePrefs: HomePrefs = { ...DEFAULTS, ...read<Partial<HomePrefs>>(PREFS_KEY, {}) };
@@ -68,5 +69,6 @@ export const history = {
     } catch {
       // storage disabled
     }
+    window.dispatchEvent(new Event("alexandria:store"));
   }
 };

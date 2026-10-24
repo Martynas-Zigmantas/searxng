@@ -113,7 +113,7 @@ from searx.locales import (
 # renaming names from searx imports ...
 from searx.autocomplete import search_autocomplete, backends as autocomplete_backends
 from searx import favicons
-from searx import home_widgets
+from searx import accounts, home_widgets
 
 from searx.valkeydb import initialize as valkey_initialize
 from searx.sxng_locales import sxng_locales
@@ -1014,6 +1014,7 @@ app.add_url_rule('/favicon_proxy', methods=['GET'], endpoint="favicon_proxy", vi
 app.add_url_rule('/widgets/geocode', methods=['GET'], endpoint="widgets_geocode", view_func=home_widgets.geocode)
 app.add_url_rule('/widgets/weather', methods=['GET'], endpoint="widgets_weather", view_func=home_widgets.weather)
 app.add_url_rule('/widgets/locate', methods=['GET'], endpoint="widgets_locate", view_func=home_widgets.locate)
+accounts.register(app)
 
 
 @app.route('/image', methods=['GET'])

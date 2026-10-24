@@ -10,33 +10,40 @@ import { Endpoints, endpoint, listen } from "../toolkit.ts";
 import { history } from "../util/homeStore.ts";
 import { startLoading, stopLoading } from "../util/loading.ts";
 
-/* ------------------------------------------------------------ app launcher */
+/* ---------------------------------------------- app launcher + account menu */
 
-const launcher = document.querySelector<HTMLElement>(".app-launcher");
-if (launcher) {
-  const button = launcher.querySelector<HTMLButtonElement>(".app-launcher-btn");
-  const panel = launcher.querySelector<HTMLElement>(".app-launcher-panel");
+// both are a button that opens a panel; opening one closes the other
+const popovers: ((open: boolean) => void)[] = [];
+
+const popover = (root: HTMLElement | null, buttonSel: string, panelSel: string): void => {
+  if (!root) return;
+  const button = root.querySelector<HTMLButtonElement>(buttonSel);
+  const panel = root.querySelector<HTMLElement>(panelSel);
+  if (!(button && panel)) return;
 
   const setOpen = (open: boolean): void => {
-    if (!(button && panel)) return;
     panel.hidden = !open;
     button.setAttribute("aria-expanded", String(open));
-    launcher.classList.toggle("open", open);
+    root.classList.toggle("open", open);
   };
+  popovers.push(setOpen);
 
-  if (button && panel) {
-    listen("click", button, (event: MouseEvent) => {
-      event.stopPropagation();
-      setOpen(panel.hidden !== false);
-    });
-    listen("click", document, (event: MouseEvent) => {
-      if (!launcher.contains(event.target as Node)) setOpen(false);
-    });
-    listen("keydown", document, (event: KeyboardEvent) => {
-      if (event.key === "Escape") setOpen(false);
-    });
-  }
-}
+  listen("click", button, (event: MouseEvent) => {
+    event.stopPropagation();
+    const open = panel.hidden !== false;
+    for (const close of popovers) close(false);
+    setOpen(open);
+  });
+  listen("click", document, (event: MouseEvent) => {
+    if (!root.contains(event.target as Node)) setOpen(false);
+  });
+  listen("keydown", document, (event: KeyboardEvent) => {
+    if (event.key === "Escape") setOpen(false);
+  });
+};
+
+popover(document.querySelector<HTMLElement>(".app-launcher"), ".app-launcher-btn", ".app-launcher-panel");
+popover(document.querySelector<HTMLElement>(".account-menu"), ".account-btn", ".account-panel");
 
 /* ------------------------------------------------------ loading needle */
 

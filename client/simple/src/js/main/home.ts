@@ -74,6 +74,7 @@ const writeJSON = (key: string, value: unknown): void => {
   } catch {
     // storage full or disabled: widgets just won't persist
   }
+  window.dispatchEvent(new Event("alexandria:store"));
 };
 
 const el = (html: string): HTMLElement => {
@@ -281,6 +282,7 @@ const renderWeatherSetup = (card: HTMLElement): void => {
 
   listen("click", card.querySelector("[data-auto]") as HTMLElement, () => {
     localStorage.removeItem(PLACE_KEY);
+    window.dispatchEvent(new Event("alexandria:store"));
     void renderWeather(card);
   });
 
@@ -441,6 +443,7 @@ const renderCustomize = (): HTMLElement => {
   }
   listen("click", panel.querySelector("[data-reset]") as HTMLElement, () => {
     localStorage.removeItem(SHORTCUTS_KEY);
+    window.dispatchEvent(new Event("alexandria:store"));
     render(true);
   });
   return wrap;

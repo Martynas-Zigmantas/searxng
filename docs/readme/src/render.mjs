@@ -99,6 +99,28 @@ const howLive = frame(
   560
 );
 
+const howAccount = frame(
+  'How the Alexandria account works',
+  `<div style="display:flex;align-items:center;gap:6px">
+    ${box('You', 'tap <b>Sign in</b> on Alexandria (top right)', { w: 220 })}
+    ${arrow('', 70)}
+    ${box('Alexandria account', 'Pocket ID · id.jack-sally.com<br>your <b>passkey</b> (Face ID, fingerprint), no password. Keeps you signed in for 30 days', { fill: C.plum, fg: C.white, border: C.plum, w: 330 })}
+    ${arrow('signed in', 100)}
+    ${box('Alexandria', 'your avatar + account card; shortcuts, recent searches and weather city sync to every device', { w: 300 })}
+  </div>
+  <div style="display:flex;align-items:center;gap:6px">
+    ${box('An app', 'Mail, Drive, Docs, Git… from the launcher', { w: 220 })}
+    ${arrow('who is this?', 120)}
+    ${box('Same Pocket ID session', 'already signed in, so it answers straight away', { w: 300 })}
+    ${arrow('', 70)}
+    ${box('You are in', 'no login screen, like Gmail after signing in to Google', { w: 290 })}
+  </div>
+  <div style="color:${C.ink};font-size:18px;background:#f6eef3;border-radius:16px;padding:16px 22px;max-width:1150px">
+    <b>Sign out</b> on Alexandria ends the Pocket ID session too: the next app you open asks for your passkey again (apps already open keep their own session until it runs out).
+  </div>`,
+  640
+);
+
 /* ------------------------------------------------------------- screens */
 const shot = (file, w, label) => `
   <figure style="margin:0;display:flex;flex-direction:column;gap:14px;align-items:center">
@@ -127,7 +149,7 @@ const cover = `
 </div>`;
 
 const pages = {
-  cover: [cover, 1800, 1013], banner: [banner, 1600, 520], 'how-search-works': [howSearch, 1600, 560], 'how-a-change-gets-live': [howLive, 1600, 560], screens: [screens, 1600, 900] };
+  cover: [cover, 1800, 1013], banner: [banner, 1600, 520], 'how-search-works': [howSearch, 1600, 560], 'how-a-change-gets-live': [howLive, 1600, 560], 'how-the-account-works': [howAccount, 1600, 640], screens: [screens, 1600, 900] };
 const { chromium } = await import(process.env.PW || 'playwright');
 const b = await chromium.launch();
 for (const [name, [html, w, h]] of Object.entries(pages)) {

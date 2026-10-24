@@ -3,8 +3,8 @@
     "file": "chunk/BuurKv-k.min.js",
     "name": "plugin"
   },
-  "_CHznsVsX.min.js": {
-    "file": "chunk/CHznsVsX.min.js",
+  "_C5J5ND7d.min.js": {
+    "file": "chunk/C5J5ND7d.min.js",
     "name": "loading"
   },
   "_DK4yUVpy.min.js": {
@@ -31,6 +31,7 @@
       "src/js/plugin/MapView.ts",
       "src/js/plugin/InfiniteScroll.ts",
       "src/js/plugin/Calculator.ts",
+      "src/js/util/accountSync.ts",
       "src/js/main/extras.ts",
       "src/js/main/keyboard.ts",
       "src/js/main/search.ts",
@@ -51,23 +52,23 @@
     ]
   },
   "src/js/main/extras.ts": {
-    "file": "chunk/BgYpkq3P.min.js",
+    "file": "chunk/BKuOhVeB.min.js",
     "name": "extras",
     "src": "src/js/main/extras.ts",
     "isDynamicEntry": true,
     "imports": [
       "src/js/index.ts",
-      "_CHznsVsX.min.js"
+      "_C5J5ND7d.min.js"
     ]
   },
   "src/js/main/home.ts": {
-    "file": "chunk/DmXpY9XP.min.js",
+    "file": "chunk/fPX9D0JM.min.js",
     "name": "home",
     "src": "src/js/main/home.ts",
     "isDynamicEntry": true,
     "imports": [
       "src/js/index.ts",
-      "_CHznsVsX.min.js"
+      "_C5J5ND7d.min.js"
     ]
   },
   "src/js/main/keyboard.ts": {
@@ -143,6 +144,12 @@
     "css": [
       "sxng-mapview.min.css"
     ]
+  },
+  "src/js/util/accountSync.ts": {
+    "file": "chunk/BsQj-Y9I.min.js",
+    "name": "accountsync",
+    "src": "src/js/util/accountSync.ts",
+    "isDynamicEntry": true
   },
   "src/less/noscript.less": {
     "file": "sxng-noscript.min.css",

@@ -1,0 +1,38 @@
+# Pocket ID = the Alexandria account (sign in with a passkey; the apps log in through it).
+# Runs the published image ghcr.io/pocket-id/pocket-id:v1: nothing to build, no Pocket ID repo to mirror.
+# node2, Portainer Git stack "pocket-id": repo https://git.jack-sally.com/Martynas-Cloud/searxng.git (this, the
+# Alexandria repo; same Forgejo token as the alexandria stack), ref refs/heads/master,
+# compose path deploy/pocket-id.portainer.yml. (Or Portainer "Web editor" with this file pasted in.)
+# id.jack-sally.com -> reverse proxy -> 192.168.178.27:41411
+#
+# Stack environment variables (Portainer, values in Bitwarden "Alexandria account (Pocket ID)"):
+#   POCKET_ID_ENCRYPTION_KEY   openssl rand -hex 32   (encrypts Pocket ID's signing keys at rest; never change it later)
+#
+# After the first start: open https://id.jack-sally.com/setup, create your user with a passkey, then
+# Application configuration: name "Alexandria", accent #1a73e8, session duration 43200 (30 days),
+# logo / background / favicon from deploy/pocket-id/ (see the README "Alexandria account").
+name: pocket-id
+
+services:
+  pocket-id:
+    container_name: pocket-id
+    image: ghcr.io/pocket-id/pocket-id:v1
+    restart: always
+    ports:
+      - "0.0.0.0:41411:1411"
+    environment:
+      - APP_URL=https://id.jack-sally.com
+      - TRUST_PROXY=true
+      - ANALYTICS_DISABLED=true
+      - ENCRYPTION_KEY=${POCKET_ID_ENCRYPTION_KEY}
+    volumes:
+      - pocket-id-data:/app/data
+    healthcheck:
+      test: ["CMD", "/app/pocket-id", "healthcheck"]
+      interval: 1m30s
+      timeout: 5s
+      retries: 2
+      start_period: 10s
+
+volumes:
+  pocket-id-data:

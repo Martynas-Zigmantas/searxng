@@ -20,6 +20,7 @@ page full of widgets, and an app launcher for the rest of the self-hosted servic
 | **Logo** | A four-point compass star, outline only, its north tip in gold: it points you the right way. Sources in [`brand/`](brand/). |
 | **Start page** | Greeting + clock, your own shortcut tiles, weather (follows your rough location from your IP until you pick a city), recent searches, quick category chips. A **Customize** button turns each one on or off. |
 | **App launcher** | The 9-dot button top right: Mail (Epistle), Drive, Photos and Calendar (Nextcloud), Docs (BookStack), Git (Forgejo), n8n, Maps, YouTube. Each tile wears the service's real logo (Simple Icons, vendored in `searx/templates/simple/elements/app_logos.html`); Photos and Calendar get a small Nextcloud badge. Edit the list in `searx/settings.yml` → `brand.custom.apps` (`logo:`, `badge:`, `icon:`, colours). |
+| **Alexandria account** | Sign in top right, like a Google account: Pocket ID with your passkey, then your avatar and an account card (*Manage your Alexandria account*, *Sign out*). Your shortcuts, recent searches, weather city and widget switches follow you to every device you sign in on. The apps in the launcher log in through the same Pocket ID, so they open already signed in. See [Alexandria account](#alexandria-account). |
 | **Loading** | The compass needle from the logo swings round and settles while something loads: in the search button while the next page comes, in the weather card, and in place of SearXNG's spinner (infinite scroll, image viewer). `client/simple/src/js/util/loading.ts`. |
 | **Less clutter** | No About link, no language / time / SafeSearch row on results (the defaults come from Preferences). |
 | **Little things** | `/` focuses the search box anywhere, a copy-link button on every result, a calmer phone layout. |
@@ -55,11 +56,12 @@ stored in a cookie for this browser. To copy the same setup to your phone, use t
 | `client/simple/src/js/main/home.ts` | Start page widgets. `extras.ts`: launcher, `/` hotkey, copy link, history. `util/homeStore.ts`: localStorage. |
 | `client/simple/src/fonts/` | Inter, variable (OFL). |
 | `searx/templates/simple/` | `index.html` (start page), `elements/apps.html` (launcher), `elements/category_icons.html` (tab glyphs), `elements/sliders_icon.html` (Preferences), `elements/brand_mark.html` (generated logo). |
+| `searx/accounts.py` | The Alexandria account: `/account/login`, `/account/callback`, `/account/logout`, `/account/data` (sync). Template `elements/account.html`, sync `client/simple/src/js/util/accountSync.ts`. |
 | `searx/home_widgets.py` | `/widgets/geocode`, `/widgets/weather`, `/widgets/locate` (IP → rough location): the server side of the weather widget. |
 | `searx/settings.yml` | Defaults baked into the image: name *Alexandria*, PWA colours, the app launcher list. |
 | `searx/static/themes/simple/` | **Built** theme (committed, like upstream). Never edit by hand, run the build. |
 | `brand/` | Logo: `src/mark.mjs` (the drawing; `N1` star is the logo, `N2` needle = the loading spinner), `src/logo.mjs` (renders `logo/*` + the theme's favicon / app icons). |
-| `deploy/` | `build-image.sh`, `alexandria.portainer.yml`, `settings.example.yml` for node2. |
+| `deploy/` | `build-image.sh`, `alexandria.portainer.yml`, `settings.example.yml`, `pocket-id.portainer.yml` + `pocket-id/` (Alexandria-branded logo, background, favicon) for node2. |
 | `docs/readme/` | These images. Sources in `docs/readme/src/`. |
 | everything else | Upstream SearXNG, unchanged. |
 
@@ -106,6 +108,35 @@ PW=<path to playwright/index.mjs> node brand/src/logo.mjs            # logo + fa
 PW=... ALEXANDRIA_URL=http://127.0.0.1:5173 node docs/readme/src/shots.mjs   # fresh screenshots (instance running)
 PW=... node docs/readme/src/render.mjs                                # banner, diagrams, collage
 ```
+
+## Alexandria account
+
+<p align="center"><img src="docs/readme/how-the-account-works.png" alt="Sign in on Alexandria with a passkey through Pocket ID; the apps then log in through the same Pocket ID session without asking" width="100%"></p>
+
+Pocket ID (passkeys, OpenID Connect) is the account behind Alexandria and every app in the launcher: sign in once,
+then Mail, Drive, Docs and Git log in through the same Pocket ID session without asking again.
+
+| Piece | Where |
+|---|---|
+| Pocket ID | node2. The published image `ghcr.io/pocket-id/pocket-id:v1` (nothing to build, no repo to mirror), run by a Portainer Git stack `pocket-id` whose compose file is **this repo's** `deploy/pocket-id.portainer.yml` (same repo URL + token as the `alexandria` stack, different compose path). `id.jack-sally.com` → `192.168.178.27:41411` |
+| Stack env (Pocket ID) | `POCKET_ID_ENCRYPTION_KEY` (`openssl rand -hex 32`; never change it later) |
+| Stack env (Alexandria) | `ALEXANDRIA_OIDC_ISSUER=https://id.jack-sally.com`, `ALEXANDRIA_OIDC_CLIENT_ID`, `ALEXANDRIA_OIDC_CLIENT_SECRET` (empty = no Sign in button) |
+| Sign-in session | Alexandria: signed cookie, 30 days. Pocket ID: set *Session duration* to 43200 min (30 days); its default of 60 min would make the apps ask again every hour |
+| Synced data | SQLite `alexandria-accounts.db` in the `alexandria-data` volume, one small JSON per account (`sub`) |
+
+First setup, after both stacks are up:
+
+1. `https://id.jack-sally.com/setup`: create your user with a passkey (add a second passkey on another device).
+2. Application configuration: name **Alexandria**, accent `#1a73e8`, session duration `43200`; logo (light + dark)
+   `deploy/pocket-id/logo.svg`, background `deploy/pocket-id/background.jpg`, favicon `deploy/pocket-id/favicon.ico`.
+3. OIDC Clients → Add: name `Alexandria`, callback `https://search.jack-sally.com/account/callback`, logout callback
+   `https://search.jack-sally.com/`, PKCE on, logo `brand/logo/app-icon.svg`. Copy the client ID + secret.
+4. Put the three `ALEXANDRIA_OIDC_*` values into the `alexandria` stack's environment, *Pull and redeploy*.
+5. For each app, add another OIDC client in Pocket ID and point the app at it (Nextcloud `user_oidc`, BookStack
+   `AUTH_METHOD=oidc`, Forgejo authentication source, ...).
+
+Signing out of Alexandria ends the Pocket ID session too, so the next app you open asks for your passkey again;
+apps that are already open keep their own session until it runs out (they don't get a sign-out signal).
 
 ## Updating from upstream SearXNG
 

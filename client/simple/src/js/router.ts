@@ -36,15 +36,24 @@ ready(() => {
   }
 });
 
+// signed in to an Alexandria account: fetch the synced start page state before anything reads localStorage
+const synced: Promise<unknown> = document.querySelector(".account-menu")
+  ? import("./util/accountSync.ts").then(({ pull }) => pull())
+  : Promise.resolve();
+
 ready(() => {
-  void import("./main/extras.ts");
+  void synced.finally(() => {
+    void import("./main/extras.ts");
+  });
 });
 
 ready(
   () => {
     void import("./main/keyboard.ts");
     void import("./main/search.ts");
-    void import("./main/home.ts");
+    void synced.finally(() => {
+      void import("./main/home.ts");
+    });
 
     if (settings.autocomplete) {
       void import("./main/autocomplete.ts");
