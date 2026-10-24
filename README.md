@@ -16,12 +16,12 @@ page full of widgets, and an app launcher for the rest of the self-hosted servic
 
 | | |
 |---|---|
-| **Look** | Google colours: white, Google blue, link-blue titles, the name in a blue → violet → rose → gold gradient, Inter (bundled, no Google Fonts call). Every result, the knowledge panel and the suggestions sit on their own card. Dark mode puts the cards on Epistle's deep plum; phones in light mode get a plum wash that fades out. Category tabs use Epistle-style glyphs in Epistle's folder colours (guitar for Music, scroll for News, amphora for Files…); Preferences is Epistle's sliders. Phones keep the name on top and a pill search box with a dropdown. |
-| **Logo** | A four-point compass star, outline only, its north tip in gold: it points you the right way. Sources in [`brand/`](brand/). |
+| **Look** | Google layout and blue buttons / links, the logo in Epistle's colours: the name in a Tyrian purple → wax red → gold gradient (lighter on dark), Inter (bundled, no Google Fonts call). Every result, the knowledge panel and the suggestions sit on their own card. Dark mode puts the cards on Epistle's deep plum; phones in light mode get a plum wash that fades out. Category tabs use Epistle-style glyphs in Epistle's folder colours (guitar for Music, scroll for News, amphora for Files…); Preferences is Epistle's sliders. Phones keep the name on top and a pill search box with a dropdown. |
+| **Logo** | Three scrolls on a gold shelf: Epistle's Archive folder glyph, because Alexandria is Epistle's sister library (picked 2026-10-24 over the compass star, which read as an AI sparkle). Epistle purple + gold, no blue. Sources in [`brand/`](brand/). |
 | **Start page** | Greeting + clock, your own shortcut tiles, weather (follows your rough location from your IP until you pick a city), recent searches, quick category chips. A **Customize** button turns each one on or off. |
 | **App launcher** | The 9-dot button top right: Mail (Epistle), Drive (Nextcloud), Bitwarden (vault.jack-sally.com), Docs (BookStack), Git (Forgejo), n8n, Maps, YouTube. Each tile wears the service's real logo (Simple Icons, vendored in `searx/templates/simple/elements/app_logos.html`). Edit the list in `searx/settings.yml` → `brand.custom.apps` (`logo:`, `badge:`, `icon:`, colours). |
 | **Alexandria account** | Your **Epistle** account: signed in to Epistle mail in this browser = signed in here, with no click. Avatar + account card top right (*Manage your Epistle account*, *Sign out*); shortcuts, recent searches, weather city and widget switches follow you to every device. See [Alexandria account](#alexandria-account). |
-| **Loading** | The compass needle from the logo swings round and settles while something loads: in the search button while the next page comes, in the weather card, and in place of SearXNG's spinner (infinite scroll, image viewer). `client/simple/src/js/util/loading.ts`. |
+| **Loading** | The compass needle (purple, gold north tip) swings round and settles while something loads: in the search button while the next page comes, in the weather card, and in place of SearXNG's spinner (infinite scroll, image viewer). `client/simple/src/js/util/loading.ts`. |
 | **Less clutter** | No About link, no language / time / SafeSearch row on results (the defaults come from Preferences). |
 | **Little things** | `/` focuses the search box anywhere, a copy-link button on every result, a calmer phone layout. |
 | **Privacy kept** | Shortcuts, history and your city live in *your browser's* localStorage only. Weather goes browser → Alexandria → [Open-Meteo](https://open-meteo.com) (no key, no account). For *near you*, Alexandria asks [ipwho.is](https://ipwho.is) (fallback ip-api.com) where your IP is, cached 6 h; on the VPN it sees a private address and uses the server's own IP instead. |
@@ -60,7 +60,7 @@ stored in a cookie for this browser. To copy the same setup to your phone, use t
 | `searx/home_widgets.py` | `/widgets/geocode`, `/widgets/weather`, `/widgets/locate` (IP → rough location): the server side of the weather widget. |
 | `searx/settings.yml` | Defaults baked into the image: name *Alexandria*, PWA colours, the app launcher list. |
 | `searx/static/themes/simple/` | **Built** theme (committed, like upstream). Never edit by hand, run the build. |
-| `brand/` | Logo: `src/mark.mjs` (the drawing; `N1` star is the logo, `N2` needle = the loading spinner), `src/logo.mjs` (renders `logo/*` + the theme's favicon / app icons). |
+| `brand/` | Logo: `src/mark.mjs` (the drawing; `S1` three scrolls is the logo, `N2` needle = the loading spinner, `N1` the old star), `src/scrolls.mjs` (the Epistle glyph), `src/logo.mjs` (renders `logo/*` + the theme's favicon / app icons). |
 | `deploy/` | `build-image.sh`, `alexandria.portainer.yml`, `settings.example.yml` for node2. |
 | `docs/readme/` | These images. Sources in `docs/readme/src/`. |
 | everything else | Upstream SearXNG, unchanged. |

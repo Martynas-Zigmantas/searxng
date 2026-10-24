@@ -46,16 +46,11 @@
   --p-accent: #1a73e8;
   --p-accent-soft: #e8f0fe;
   --p-glow: rgb(66 133 244 / 8%);
-  --p-gold: #f4b400;
-  --p-mark: #4285f4;
+  // the logo in Epistle's colours (Tyrian purple, wax red, gold); buttons + links stay Google blue
+  --p-gold: #c9a24a;
+  --p-mark: #4a1238;
   --p-on-accent: #fff;
-  --p-grad: linear-gradient(
-    100deg,
-    #4285f4 0%,
-    #9b72cb 40%,
-    #d96570 70%,
-    #f4b400 100%
-  );
+  --p-grad: linear-gradient(100deg, #4a1238 0%, #a3242b 55%, #c9a24a 100%);
   --p-shadow-1: 0 1px 2px rgb(60 64 67 / 12%), 0 1px 3px 1px rgb(60 64 67 / 8%);
   --p-shadow-2:
     0 1px 3px rgb(60 64 67 / 16%), 0 4px 12px 2px rgb(60 64 67 / 10%);
@@ -139,8 +134,10 @@
   --p-accent: #8ab4f8;
   --p-accent-soft: #283142;
   --p-glow: rgb(138 180 248 / 8%);
-  --p-gold: #fbbc04;
-  --p-mark: #8ab4f8;
+  --p-gold: #e6c46e;
+  --p-mark: #f4ebd6;
+  // lighter Epistle purple -> wax red -> gold, so the name reads on dark grey and deep plum
+  --p-grad: linear-gradient(100deg, #d9a3c6 0%, #e8707a 55%, #e6c46e 100%);
   --p-on-accent: #202124;
   --p-shadow-1: 0 1px 3px rgb(0 0 0 / 40%);
   --p-shadow-2: 0 4px 16px rgb(0 0 0 / 45%);
@@ -171,7 +168,7 @@
   --p-card-border: #262626;
 }
 
-// the name in Google's blue -> violet -> rose -> gold
+// the name in Epistle's purple -> wax red -> gold
 .p-grad-text() {
   background: var(--p-grad);
   background-size: 200% 100%;

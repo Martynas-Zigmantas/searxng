@@ -1,5 +1,5 @@
 // Alexandria logo: writes brand/logo/*, the theme's brand SVGs (favicon, PWA icons) and the inline template mark.
-// Re-render:  PW=<path to playwright/index.mjs> [MARK=N1|N2] node brand/src/logo.mjs
+// Re-render:  PW=<path to playwright/index.mjs> [MARK=S1|N1|N2] node brand/src/logo.mjs
 import fs from 'node:fs';
 import { C, MARK, mark, marks } from './mark.mjs';
 
@@ -8,10 +8,12 @@ const OUT = `${ROOT}brand/logo/`;
 const FONT = `${ROOT}client/simple/src/fonts/inter-latin-wght-normal.woff2`;
 const svg = (inner, vb = '0 0 100 100') => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${vb}">${inner}</svg>\n`;
 const tile = (bg) => `<rect width="100" height="100" rx="22" fill="${bg}"/>`;
+// the scrolls fill their whole box: give them room on the tile
+const pad = (inner) => `<g transform="translate(9 9) scale(.82)">${inner}</g>`;
 const files = {
-  'app-icon.svg': svg(tile(C.plum) + mark(C.white, C.gold)),
-  'app-icon-light.svg': svg(tile(C.white) + mark(C.plum, C.gold)),
-  'favicon.svg': svg(tile(C.plum) + mark(C.white, C.gold, 8)),
+  'app-icon.svg': svg(tile(C.plum) + pad(mark(C.white, C.gold))),
+  'app-icon-light.svg': svg(tile(C.white) + pad(mark(C.plum, C.gold))),
+  'favicon.svg': svg(tile(C.plum) + pad(mark(C.white, C.gold, 8))),
   'mark-plum.svg': svg(mark(C.plum, C.gold), '14 14 72 72'),
   'mark-white.svg': svg(mark(C.white, C.gold), '14 14 72 72'),
 };
