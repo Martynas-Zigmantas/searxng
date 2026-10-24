@@ -1,17 +1,17 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 /*
- * Alexandria skin for the simple theme (Epistle family: plum, white, a touch
- * of gold; Plus Jakarta Sans, bundled).  Google-clean layout, pill search box, soft cards,
+ * Alexandria skin for the simple theme: Google colours (white, greys, Google blue),
+ * a blue-to-gold gradient on the name, Inter (bundled).  Google-clean layout, pill search box, soft cards,
  * app launcher, start page widgets.  Loaded last from style.less so it only
  * overrides; delete the import to get stock SearXNG.
  */
 
 @font-face {
   font-family: "Alexandria Sans";
-  font-weight: 200 800;
+  font-weight: 100 900;
   font-display: swap;
-  src: url("../fonts/plus-jakarta-sans-latin-wght-normal.woff2") format("woff2");
+  src: url("../fonts/inter-latin-wght-normal.woff2") format("woff2");
 }
 
 // an override layer is ordered by component, not by specificity
@@ -26,24 +26,41 @@
   --p-display: var(--p-font);
   --p-bg: #fff;
   --p-surface: #fff;
-  --p-surface-2: #f7f2f5;
-  --p-surface-3: #ede3e9;
-  --p-border: #e6dbe2;
-  --p-text: #22161d;
-  --p-text-2: #54444d;
-  --p-text-3: #857480;
-  --p-link: #6b1d52;
-  --p-link-visited: #8f4a78;
-  --p-accent: #4a1238;
-  --p-accent-soft: #f4e6ee;
-  --p-glow: rgb(107 29 82 / 9%);
-  --p-gold: #b08a35;
-  --p-mark: #4a1238;
+  --p-surface-2: #f1f3f4;
+  --p-surface-3: #e8eaed;
+  --p-border: #dadce0;
+  --p-text: #202124;
+  --p-text-2: #4d5156;
+  --p-text-3: #70757a;
+  --p-link: #1a0dab;
+  --p-link-visited: #681da8;
+  // results page: a soft plum wash under the header that fades out, each result on a white card
+  --p-page: #fbf8fa;
+  // desktop: plain; phones get a plum wash that fades out (see the @phone block)
+  --p-page-bg: none;
+  --p-card: #fff;
+  --p-card-border: #e3e5e8;
+  // start page weather / recent searches: white with Epistle's deep plum outline
+  --p-home-card: #fff;
+  --p-home-card-border: #2a0820;
+  --p-home-tile: var(--p-surface-2);
+  --p-accent: #1a73e8;
+  --p-accent-soft: #e8f0fe;
+  --p-glow: rgb(66 133 244 / 8%);
+  --p-gold: #f4b400;
+  --p-mark: #4285f4;
   --p-on-accent: #fff;
-  --p-shadow-1: 0 1px 2px rgb(74 18 56 / 10%), 0 1px 3px 1px rgb(74 18 56 / 6%);
+  --p-grad: linear-gradient(
+    100deg,
+    #4285f4 0%,
+    #9b72cb 40%,
+    #d96570 70%,
+    #f4b400 100%
+  );
+  --p-shadow-1: 0 1px 2px rgb(60 64 67 / 12%), 0 1px 3px 1px rgb(60 64 67 / 8%);
   --p-shadow-2:
-    0 2px 4px rgb(74 18 56 / 10%), 0 8px 24px 2px rgb(74 18 56 / 12%);
-  --p-shadow-search: 0 2px 10px rgb(74 18 56 / 18%);
+    0 1px 3px rgb(60 64 67 / 16%), 0 4px 12px 2px rgb(60 64 67 / 10%);
+  --p-shadow-search: 0 1px 6px rgb(32 33 36 / 28%);
   --p-radius: 16px;
 }
 
@@ -103,25 +120,33 @@
 }
 
 .pretty-dark() {
-  --p-bg: #1f0817;
-  --p-surface: #2a0d21;
-  --p-surface-2: #34122a;
-  --p-surface-3: #451a39;
-  --p-border: #4a1d40;
-  --p-text: #fbf7fa;
-  --p-text-2: #e2d5dc;
-  --p-text-3: #a8928f;
-  --p-link: #e6c878;
-  --p-link-visited: #d4a9c6;
-  --p-accent: #c9a24a;
-  --p-accent-soft: #3e1a33;
-  --p-glow: rgb(201 162 74 / 10%);
-  --p-gold: #c9a24a;
-  --p-mark: #fff;
-  --p-on-accent: #2a0820;
-  --p-shadow-1: 0 1px 3px rgb(0 0 0 / 45%);
-  --p-shadow-2: 0 6px 20px rgb(0 0 0 / 50%);
-  --p-shadow-search: 0 2px 10px rgb(0 0 0 / 50%);
+  --p-bg: #1f1f1f;
+  --p-surface: #2b2c2f;
+  --p-surface-2: #303134;
+  --p-surface-3: #3c4043;
+  --p-border: #3c4043;
+  --p-text: #e8eaed;
+  --p-text-2: #bdc1c6;
+  --p-text-3: #9aa0a6;
+  --p-link: #99c3ff;
+  --p-link-visited: #c58af9;
+  // Epistle's deep plum behind the result cards (phone + desktop)
+  --p-page: #2a0820;
+  --p-page-bg: none;
+  --p-card: #2b2c2f;
+  --p-card-border: transparent;
+  --p-home-card: var(--p-surface-2);
+  --p-home-card-border: transparent;
+  --p-home-tile: var(--p-bg);
+  --p-accent: #8ab4f8;
+  --p-accent-soft: #283142;
+  --p-glow: rgb(138 180 248 / 8%);
+  --p-gold: #fbbc04;
+  --p-mark: #8ab4f8;
+  --p-on-accent: #202124;
+  --p-shadow-1: 0 1px 3px rgb(0 0 0 / 40%);
+  --p-shadow-2: 0 4px 16px rgb(0 0 0 / 45%);
+  --p-shadow-search: 0 1px 6px rgb(0 0 0 / 45%);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -137,11 +162,34 @@
 :root.theme-black {
   .pretty-dark();
 
-  --p-bg: #0d030a;
-  --p-surface: #170612;
-  --p-surface-2: #1f0918;
-  --p-surface-3: #2c0f23;
-  --p-border: #2c0f23;
+  --p-bg: #000;
+  --p-surface: #141414;
+  --p-surface-2: #1b1b1b;
+  --p-surface-3: #262626;
+  --p-border: #262626;
+  --p-page: #000;
+  --p-page-bg: none;
+  --p-card: #141414;
+  --p-card-border: #262626;
+}
+
+// the name in Google's blue -> violet -> rose -> gold
+.p-grad-text() {
+  background: var(--p-grad);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+@keyframes p-shimmer {
+  from {
+    background-position: 0% 50%;
+  }
+
+  to {
+    background-position: 100% 50%;
+  }
 }
 
 /// Base ---------------------------------------------------------------------
@@ -149,7 +197,6 @@
 html,
 body {
   font-family: var(--p-font);
-  word-spacing: 0.08em; // Plus Jakarta Sans has a very narrow space (0.17 em)
   background: var(--p-bg);
   color: var(--p-text-2);
   -webkit-font-smoothing: antialiased;
@@ -170,6 +217,8 @@ label:focus-visible {
 }
 
 footer {
+  // stock gives it width: 100% plus padding, so phones could scroll sideways
+  box-sizing: border-box;
   background: transparent;
   border: 0;
   color: var(--p-text-3);
@@ -206,6 +255,11 @@ footer {
 
     svg {
       .ltr-margin-right(0.35em);
+    }
+
+    // Epistle's sliders, in the launcher dots' colour so the pair match
+    .pref-glyph {
+      color: var(--p-text-2);
     }
 
     &:hover {
@@ -355,6 +409,24 @@ footer {
   }
 }
 
+// stock hides every span in #links_on_top below tablet width (to drop the link words);
+// that took the launcher's tiles with it, so phones got an empty panel
+#links_on_top .app-launcher-panel {
+  .app-tile-icon,
+  .app-badge {
+    display: grid;
+  }
+
+  .app-tile-name {
+    display: block;
+  }
+
+  // the Preferences link's icon-to-word gap ("#links_on_top a svg") pushed every logo 2px left
+  svg {
+    margin: 0;
+  }
+}
+
 @keyframes p-pop {
   from {
     opacity: 0;
@@ -493,6 +565,8 @@ footer {
   flex-direction: column;
   align-items: center;
   padding: 0 1rem;
+  // the logo glow below reaches 9rem past the sides; don't let it widen the page on phones
+  overflow-x: clip;
 
   .home-hero {
     position: relative;
@@ -510,7 +584,7 @@ footer {
     min-height: 0;
     margin: 0 0 1.75rem;
 
-    // soft plum light behind the logo
+    // soft blue light behind the logo
     &::before {
       content: "";
       position: absolute;
@@ -528,13 +602,19 @@ footer {
     gap: 0.18em;
     margin: 0;
     color: var(--p-mark);
-    font: 800 clamp(2.9rem, 8vw, 4.6rem) / 1 var(--p-display);
-    letter-spacing: -0.05em;
+    font: 600 clamp(2.9rem, 8vw, 4.6rem) / 1 var(--p-display);
+    letter-spacing: -0.045em;
     user-select: none;
 
     .brand-mark {
       width: 0.95em;
       height: 0.95em;
+    }
+
+    span {
+      .p-grad-text();
+
+      animation: p-shimmer 12s ease-in-out infinite alternate;
     }
   }
 
@@ -607,7 +687,6 @@ footer {
 
     svg {
       font-size: 1rem;
-      color: var(--p-accent);
     }
 
     &:hover {
@@ -746,6 +825,7 @@ footer {
   :root.theme-auto {
     .pretty-dark-shortcuts();
     .pretty-dark-loader();
+    .pretty-dark-tabs();
   }
 }
 
@@ -753,6 +833,7 @@ footer {
 :root.theme-black {
   .pretty-dark-shortcuts();
   .pretty-dark-loader();
+  .pretty-dark-tabs();
 }
 
 .home-cards {
@@ -765,8 +846,9 @@ footer {
   min-width: 0;
   overflow: hidden;
   padding: 1.1rem 1.25rem 1.25rem;
+  border: 3px solid var(--p-home-card-border);
   border-radius: var(--p-radius);
-  background: var(--p-surface-2);
+  background: var(--p-home-card);
   color: var(--p-text-2);
   font-size: 0.9rem;
   text-align: left;
@@ -1009,7 +1091,7 @@ footer {
     gap: 0.2rem;
     padding: 0.5rem 0.25rem;
     border-radius: 12px;
-    background: var(--p-bg);
+    background: var(--p-home-tile);
     color: var(--p-text);
     font-size: 0.8rem;
 
@@ -1273,9 +1355,10 @@ body.results_endpoint {
   }
 
   .search_logo_text {
-    font: 800 1.35rem / 1 var(--p-display);
-    letter-spacing: -0.05em;
-    color: var(--p-mark);
+    .p-grad-text();
+
+    font: 600 1.35rem / 1 var(--p-display);
+    letter-spacing: -0.04em;
     white-space: nowrap;
   }
 }
@@ -1652,16 +1735,24 @@ button.category_button.selected {
   height: auto;
   margin: 0 0 0.5rem;
   color: var(--p-mark);
-  font: 800 2.2rem / 1 var(--p-display);
-  letter-spacing: -0.05em;
+  font: 600 2.2rem / 1 var(--p-display);
+  letter-spacing: -0.04em;
 
   .brand-mark {
     width: 2.3rem;
     height: 2.3rem;
   }
+
+  > span {
+    .p-grad-text();
+  }
 }
 
 #main_preferences {
+  #categories_container {
+    flex-wrap: wrap;
+  }
+
   max-width: 62rem;
   margin: 0 auto;
   padding: 4.5rem 1.5rem 2rem;
@@ -1716,6 +1807,8 @@ button.category_button.selected {
     border-bottom: 1px solid var(--p-border);
     margin: 0;
     padding: 1rem 0;
+    // a fieldset is min-content wide by default; the category row stretched the page on phones
+    min-width: 0;
 
     &:last-of-type {
       border-bottom: 0;
@@ -1901,6 +1994,166 @@ html.is-loading #home_widgets {
   .loader {
     animation-duration: 4s;
   }
+
+  .index h1.home-wordmark span {
+    animation: none;
+  }
+}
+
+/// Results as cards ---------------------------------------------------------
+// The results page sits on a soft canvas and every result, the knowledge panel and the
+// suggestions get their own card, like the Google app. The header stays white.
+
+/* stylelint-disable-next-line no-duplicate-selectors -- kept apart from the header rules above */
+body.results_endpoint {
+  background: var(--p-page-bg), var(--p-page);
+
+  #urls .result {
+    padding: 1rem 1.2rem 0.8rem;
+    margin: 0 0 0.75rem;
+    background: var(--p-card);
+    border: 1px solid var(--p-card-border);
+    border-radius: 22px;
+    box-shadow: 0 1px 2px rgb(60 64 67 / 6%);
+
+    &[data-vim-selected] {
+      background: var(--p-card);
+      border-color: var(--p-link);
+    }
+
+    .engines {
+      margin-top: 0.6rem;
+    }
+  }
+
+  #urls .result-images {
+    padding: 0.4rem;
+  }
+
+  #sidebar {
+    details.sidebar-collapsible {
+      padding: 0 1.2rem;
+      background: var(--p-card);
+      border: 1px solid var(--p-card-border);
+      border-radius: 22px;
+
+      &#infoboxes {
+        padding: 0;
+        background: none;
+        border: 0;
+      }
+    }
+
+    // collapsed = a slim pill with the title centred; open = room under the content
+    details.sidebar-collapsible summary,
+    #infoboxes > details summary {
+      margin: 0;
+      padding: 0.85rem 0;
+    }
+
+    details.sidebar-collapsible[open],
+    #infoboxes > details[open] {
+      padding-bottom: 1rem;
+    }
+
+    #infoboxes > details {
+      padding: 0 1.2rem;
+      background: var(--p-card);
+      border: 1px solid var(--p-card-border);
+      border-radius: 22px;
+    }
+
+    .infobox {
+      padding: 0.25rem 0 0;
+      border: 0;
+      background: none;
+    }
+  }
+
+  #answers,
+  #corrections {
+    background: var(--p-card);
+    border: 1px solid var(--p-card-border);
+    border-radius: 22px;
+  }
+
+  #pagination {
+    padding-bottom: 1.5rem;
+  }
+
+  // the cards already separate things; stock draws a rule under the collapsed sidebar on phones
+  #sidebar-end-collapsible {
+    border-bottom: 0;
+  }
+}
+
+/// Category tabs: Epistle glyphs in Epistle folder colours ------------------
+
+.cat-glyph {
+  flex: none;
+  width: 1.15rem;
+  height: 1.15rem;
+  color: var(--cat, var(--p-text-3));
+  transition: transform 0.15s;
+}
+
+.cat-glyph .cat-north {
+  stroke: var(--p-gold);
+}
+
+.cat-general {
+  --cat: var(--p-mark);
+}
+
+.cat-images {
+  --cat: #d9573a;
+}
+
+.cat-videos {
+  --cat: #a3242b;
+}
+
+.cat-news {
+  --cat: #2f7d6d;
+}
+
+.cat-map {
+  --cat: #1f7a8c;
+}
+
+.cat-music {
+  --cat: #b0397a;
+}
+
+.cat-it {
+  --cat: #5a5ce0;
+}
+
+.cat-science {
+  --cat: #b8860b;
+}
+
+.cat-files {
+  --cat: #7a5230;
+}
+
+.cat-social-media {
+  --cat: #8e4bb0;
+}
+
+.category_checkbox label:hover .cat-glyph,
+button.category_button:hover .cat-glyph {
+  transform: translateY(-1px);
+}
+
+.pretty-dark-tabs() {
+  .cat-glyph {
+    color: color-mix(in srgb, var(--cat, #fff) 55%, #fff);
+  }
+
+  .cat-general .cat-glyph {
+    color: #fff;
+  }
 }
 
 /// Small screens ------------------------------------------------------------
@@ -1932,31 +2185,77 @@ html.is-loading #home_widgets {
 @media screen and (max-width: @phone) {
   :root {
     --p-logo-w: auto;
+    // phones: the fuller plum wash, fading out over a couple of screens
+    --p-page-bg: linear-gradient(
+        180deg,
+        #ecdce6 0,
+        #f5ecf1 22rem,
+        #fbf8fa 48rem
+      )
+      no-repeat;
   }
 
-  #links_on_top a span {
+  // only the top-level links lose their words; the app tiles in the launcher keep icon + name
+  #links_on_top > a span {
     display: none;
   }
 
   body.results_endpoint {
+    // the name stays on top, centred, like the Google app; settings + launcher sit beside it
     #search_header {
-      grid-template-columns: 1fr;
+      box-sizing: border-box;
+      width: 100%;
+      grid-template-columns: minmax(0, 1fr);
       grid-template-areas:
+        "logo"
         "search"
         "categories";
-      .ltr-padding-right(7.5rem);
+      padding-top: 0.75rem;
+      .ltr-padding-right(1rem);
     }
 
     #search_logo {
-      display: none;
+      display: flex;
+      justify-self: center;
+      width: auto;
+      height: 2.25rem;
+
+      .brand-mark {
+        width: 1.45rem;
+        height: 1.45rem;
+      }
+
+      .search_logo_text {
+        font-size: 1.3rem;
+      }
     }
 
-    #links_on_top a {
+    #links_on_top {
+      top: 0.7rem;
+    }
+
+    #urls .result {
+      margin: 0 0.5rem 0.6rem;
+      padding: 0.9rem 1rem 0.7rem;
+      border-radius: 20px;
+    }
+
+    // stock zeroes this with "#main_results div#results"; a gap under the tabs, like the gaps between cards
+    #main_results div#results {
+      margin-top: 0.75rem;
+    }
+
+    #sidebar {
+      margin: 0 0.5rem;
+      padding: 0;
+    }
+
+    #links_on_top > a {
       padding: 0.45rem;
     }
 
     .search_box {
-      max-width: calc(100vw - 9rem);
+      max-width: none;
     }
   }
 
@@ -1964,6 +2263,13 @@ html.is-loading #home_widgets {
     flex-wrap: nowrap;
     overflow-x: auto;
     scrollbar-width: none;
+  }
+
+  // stock hides tab icons on phones; ours are the point
+  .category svg.cat-glyph {
+    display: inline-block;
+    width: 1.05rem;
+    height: 1.05rem;
   }
 
   .index .home-hero {

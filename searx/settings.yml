@@ -42,14 +42,14 @@ brand:
       - {name: n8n, url: "https://n8n.jack-sally.com", logo: n8n, color: "#EA4B71", color2: "#b9294d"}
       - {name: Maps, url: "https://www.openstreetmap.org", logo: openstreetmap, color: "#7EBC6F", color2: "#4e8f40"}
       - {name: YouTube, url: "https://www.youtube.com", logo: youtube, color: "#FF0000", color2: "#c00000"}
-  # PWA icon colours used in manifest.json (Alexandria: Epistle plum + white)
+  # PWA / browser-bar colours used in manifest.json (Alexandria: Google white / greys)
   pwa_colors:
-    theme_color_light: "#4A1238"
+    theme_color_light: "#FFFFFF"
     background_color_light: "#FFFFFF"
-    theme_color_dark: "#2A0820"
-    background_color_dark: "#1F0817"
-    theme_color_black: "#2A0820"
-    background_color_black: "#0D030A"
+    theme_color_dark: "#1F1F1F"
+    background_color_dark: "#1F1F1F"
+    theme_color_black: "#000000"
+    background_color_black: "#000000"
 
 search:
   # Filter results. 0: None, 1: Moderate, 2: Strict
@@ -62,7 +62,7 @@ search:
   autocomplete_min: 4
   # backend for the favicon near URL in search results.
   # Available resolvers: "allesedv", "duckduckgo", "google", "kagi", "yandex" - leave blank to turn it off by default.
-  favicon_resolver: ""
+  favicon_resolver: "duckduckgo"  # Alexandria: site icons next to results (fetched by the server)
   # Default search language - leave blank to detect from browser information or
   # use codes from 'languages.py'
   default_lang: "auto"

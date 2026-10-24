@@ -5,7 +5,7 @@ import { C, MARK, mark, marks } from './mark.mjs';
 
 const ROOT = new URL('../../', import.meta.url).pathname;
 const OUT = `${ROOT}brand/logo/`;
-const FONT = `${ROOT}client/simple/src/fonts/plus-jakarta-sans-latin-wght-normal.woff2`;
+const FONT = `${ROOT}client/simple/src/fonts/inter-latin-wght-normal.woff2`;
 const svg = (inner, vb = '0 0 100 100') => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${vb}">${inner}</svg>\n`;
 const tile = (bg) => `<rect width="100" height="100" rx="22" fill="${bg}"/>`;
 const files = {
@@ -40,11 +40,11 @@ for (const n of ['app-icon', 'app-icon-light', 'favicon']) {
   await p.setContent(`<body style="margin:0">${files[`${n}.svg`].replace('<svg ', '<svg width="1024" height="1024" ')}</body>`);
   await p.screenshot({ path: `${OUT}${n}.png`, omitBackground: true });
 }
-const face = `@font-face{font-family:Jakarta;font-weight:200 800;src:url(data:font/woff2;base64,${fs.readFileSync(FONT).toString('base64')}) format('woff2')}`;
+const face = `@font-face{font-family:Inter;font-weight:100 900;src:url(data:font/woff2;base64,${fs.readFileSync(FONT).toString('base64')}) format('woff2')}`;
 for (const [n, bg, fg] of [['lockup-dark', C.plum, C.white], ['lockup-light', C.white, C.plum]]) {
   const q = await b.newPage({ viewport: { width: 1400, height: 400 } });
   await q.setContent(`<html><head><style>${face}</style></head><body style="margin:0;background:${bg};display:flex;align-items:center;justify-content:center;height:400px;gap:22px">
-    <svg viewBox="14 14 72 72" width="170" height="170">${mark(fg, C.gold)}</svg><span style="font:800 130px Jakarta,sans-serif;letter-spacing:-0.05em;color:${fg}">Alexandria</span></body></html>`);
+    <svg viewBox="14 14 72 72" width="170" height="170">${mark(fg, C.gold)}</svg><span style="font:600 130px Inter,sans-serif;letter-spacing:-0.05em;color:${fg}">Alexandria</span></body></html>`);
   await q.evaluate(() => document.fonts.ready);
   await q.screenshot({ path: `${OUT}${n}.png` });
   await q.close();

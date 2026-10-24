@@ -8,11 +8,11 @@ import { C, mark } from '../../../brand/src/mark.mjs';
 const ROOT = new URL('../../../', import.meta.url).pathname;
 const OUT = `${ROOT}docs/readme/`;
 const SHOTS = `${ROOT}docs/readme/src/shots/`;
-const font = fs.readFileSync(`${ROOT}client/simple/src/fonts/plus-jakarta-sans-latin-wght-normal.woff2`).toString('base64');
+const font = fs.readFileSync(`${ROOT}client/simple/src/fonts/inter-latin-wght-normal.woff2`).toString('base64');
 const CSS = `
-@font-face{font-family:Jakarta;font-weight:200 800;src:url(data:font/woff2;base64,${font}) format('woff2')}
-*{box-sizing:border-box} body{margin:0;font-family:Jakarta,"Segoe UI",Roboto,Arial,sans-serif;word-spacing:.08em}
-.serif{font-family:Jakarta,sans-serif;font-weight:800;letter-spacing:-0.04em;word-spacing:.18em}
+@font-face{font-family:Inter;font-weight:100 900;src:url(data:font/woff2;base64,${font}) format('woff2')}
+*{box-sizing:border-box} body{margin:0;font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif}
+.serif{font-family:Inter,sans-serif;font-weight:600;letter-spacing:-0.04em}
 `;
 const markSvg = (fg, w) => `<svg viewBox="14 14 72 72" width="${w}" height="${w}">${mark(fg, C.gold)}</svg>`;
 const img = (file) => `data:image/png;base64,${fs.readFileSync(SHOTS + file).toString('base64')}`;
@@ -91,10 +91,10 @@ const howLive = frame(
     ${arrow('', 40)}
     ${step(4, 'Build image', '<code>~/searxng/deploy/<br>build-image.sh</code><br>→ <code>alexandria:latest</code>', 'node2')}
     ${arrow('', 40)}
-    ${step(5, 'Redeploy', 'Portainer → Stacks → <b>alexandria</b> → Update the stack', 'node2')}
+    ${step(5, 'Redeploy', 'Portainer → Stacks → <b>alexandria</b> (Git stack) → Pull and redeploy', 'node2')}
   </div>
   <div style="color:${C.ink};font-size:18px;background:#f6eef3;border-radius:16px;padding:16px 22px;max-width:1150px">
-    Only changing settings (engines, secret key, limiter)? Skip 1-4: edit <code>/home/ar_admin/alexandria/config/settings.yml</code> on node2 and restart the <b>alexandria-core</b> container.
+    Only changing settings (engines, limiter)? Skip 1-4: edit <code>settings.yml</code> in the <b>alexandria-config</b> volume on node2 and restart the <b>alexandria-core</b> container.
   </div>`,
   560
 );

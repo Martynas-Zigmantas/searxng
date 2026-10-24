@@ -18,9 +18,9 @@
       "_DK4yUVpy.min.js"
     ]
   },
-  "src/fonts/plus-jakarta-sans-latin-wght-normal.woff2": {
-    "file": "sxng-plus-jakarta-sans-latin-wght-normal.woff2",
-    "src": "src/fonts/plus-jakarta-sans-latin-wght-normal.woff2"
+  "src/fonts/inter-latin-wght-normal.woff2": {
+    "file": "sxng-inter-latin-wght-normal.woff2",
+    "src": "src/fonts/inter-latin-wght-normal.woff2"
   },
   "src/js/index.ts": {
     "file": "sxng-core.min.js",
@@ -171,7 +171,7 @@
     "src": "src/less/style-ltr.less",
     "isEntry": true,
     "assets": [
-      "sxng-plus-jakarta-sans-latin-wght-normal.woff2"
+      "sxng-inter-latin-wght-normal.woff2"
     ]
   },
   "src/less/style-rtl.less": {
@@ -183,7 +183,7 @@
     "src": "src/less/style-rtl.less",
     "isEntry": true,
     "assets": [
-      "sxng-plus-jakarta-sans-latin-wght-normal.woff2"
+      "sxng-inter-latin-wght-normal.woff2"
     ]
   }
 }

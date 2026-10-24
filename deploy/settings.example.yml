@@ -1,5 +1,6 @@
-# /home/ar_admin/alexandria/config/settings.yml on node2 (example; the real one has its own secret_key).
-# Everything not listed here comes from searx/settings.yml in the image (Alexandria name, app launcher, colours).
+# Optional overrides. The container writes /etc/searxng/settings.yml itself on first start (volume
+# alexandria-config, random secret_key); add lines like these to it only if you want to change a default.
+# Everything not listed comes from searx/settings.yml in the image (name, app launcher, site icons, colours).
 use_default_settings: true
 
 server:

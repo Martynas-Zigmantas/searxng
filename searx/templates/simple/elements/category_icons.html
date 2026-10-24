@@ -1,0 +1,20 @@
+{#- Alexandria: category tab glyphs, drawn in Epistle's folder-icon style (24px grid, 1.6 stroke, round caps).
+    Several are Epistle's own (scroll, lamp, jar, people, star: sogo-client branding/icons). Each tab gets an
+    Epistle folder colour through the cat-<name> class (pretty.less). -#}
+{%- set category_glyphs = {
+    "general": '<path d="M12 2.8 14 10l7.2 2-7.2 2-2 7.2-2-7.2-7.2-2 7.2-2z"/><path d="M12 2.8V7" class="cat-north"/>',
+    "images": '<rect x="3.5" y="4.5" width="17" height="15" rx="2.5"/><path d="m3.5 16.5 5-5 4 4 2.5-2.5 5.5 5"/><circle cx="15.8" cy="8.8" r="1.6"/>',
+    "videos": '<rect x="3.5" y="5.5" width="17" height="13" rx="3"/><path d="M10.4 9.3v5.4l4.6-2.7z"/>',
+    "news": '<rect x="3.5" y="3" width="17" height="3.2" rx="1.6"/><rect x="3.5" y="17.8" width="17" height="3.2" rx="1.6"/><path d="M6 6.2v11.6M18 6.2v11.6M9 10h6M9 13.5h4.5"/>',
+    "map": '<path d="M12 20.8s-6.2-5.6-6.2-10.6a6.2 6.2 0 0 1 12.4 0c0 5-6.2 10.6-6.2 10.6z"/><circle cx="12" cy="10.2" r="2.2"/>',
+    "music": '<g transform="rotate(40 12 12)"><path d="M9.68 15A3.2 3.2 0 1 1 14.32 15A3.64 3.64 0 1 1 9.68 15z"/><circle cx="12" cy="16.2" r="1.05"/><path d="M12 9.6V4.6M10.7 19.4h2.6"/><rect x="10.9" y="1.8" width="2.2" height="2.8" rx=".7"/></g>',
+    "it": '<rect x="3.5" y="4.5" width="17" height="15" rx="2.5"/><path d="M9.3 9.6 6.9 12l2.4 2.4M14.7 9.6l2.4 2.4-2.4 2.4M12.9 9.1l-1.8 5.8"/>',
+    "science": '<path d="M3.5 13.5c1.5 2.6 4.5 4 8.5 4s6.4-1.4 8-3.8l-4.5-.7"/><path d="M3.5 13.5c2.5-1.2 5.5-1.6 8.5-1.3l3.5.8"/><path d="M20 13.7c.5-.4.9-.9 1-1.5"/><path d="M12 9.5c-1.5-1.4-1.2-3.5.6-5 .2 1.4 1.4 2.1 1.4 3.4 0 1-.8 1.8-2 1.6z"/><path d="M10 20.5h4"/>',
+    "files": '<path d="M9 3.5h6M10 3.5v2.3C7.3 6.9 5.6 9.4 5.6 12.6c0 3 1.4 5.6 3.2 7.9h6.4c1.8-2.3 3.2-4.9 3.2-7.9 0-3.2-1.7-5.7-4.4-6.8V3.5"/><path d="M6.3 10h11.4"/>',
+    "social media": '<circle cx="9" cy="8" r="3"/><path d="M3.5 19.5c.4-3.3 2.6-5.5 5.5-5.5s5.1 2.2 5.5 5.5"/><path d="M15.5 5.3a3 3 0 0 1 0 5.4M17 14.2c2 .6 3.2 2.6 3.5 5.3"/>',
+  } -%}
+{%- macro category_icon(category) -%}
+<svg class="cat-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+  {{- (category_glyphs[category] if category in category_glyphs else '<path d="M12 2.5v19M2.5 12h19M5.5 5.5l13 13M18.5 5.5l-13 13"/><circle cx="12" cy="12" r="2.2"/>') | safe -}}
+</svg>
+{%- endmacro -%}

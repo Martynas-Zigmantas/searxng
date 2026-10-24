@@ -1,5 +1,5 @@
 {% extends "simple/base.html" %}
-{% from 'simple/icons.html' import icon_big %}
+{% from 'simple/elements/category_icons.html' import category_icon %}
 {% block content %}
 <div class="index">
     <div class="home-hero">
@@ -7,12 +7,12 @@
         <div class="title"><h1 class="home-wordmark">{% include 'simple/elements/brand_mark.html' %}<span>{{ instance_name }}</span></h1></div>
         {% include 'simple/simple_search.html' %}
         <div class="home-chips hide_if_nojs" data-search-url="{{ url_for('search') }}">
-            <button type="button" data-cat="images">{{ icon_big('image') }}<span>{{ _('images') }}</span></button>
-            <button type="button" data-cat="videos">{{ icon_big('play') }}<span>{{ _('videos') }}</span></button>
-            <button type="button" data-cat="news">{{ icon_big('newspaper') }}<span>{{ _('news') }}</span></button>
-            <button type="button" data-cat="map">{{ icon_big('location') }}<span>{{ _('map') }}</span></button>
-            <button type="button" data-cat="music">{{ icon_big('musical-notes') }}<span>{{ _('music') }}</span></button>
-            <button type="button" data-cat="it">{{ icon_big('layers') }}<span>{{ _('it')|upper }}</span></button>
+            <button type="button" class="cat-images" data-cat="images">{{ category_icon('images') }}<span>{{ _('images') }}</span></button>
+            <button type="button" class="cat-videos" data-cat="videos">{{ category_icon('videos') }}<span>{{ _('videos') }}</span></button>
+            <button type="button" class="cat-news" data-cat="news">{{ category_icon('news') }}<span>{{ _('news') }}</span></button>
+            <button type="button" class="cat-map" data-cat="map">{{ category_icon('map') }}<span>{{ _('map') }}</span></button>
+            <button type="button" class="cat-music" data-cat="music">{{ category_icon('music') }}<span>{{ _('music') }}</span></button>
+            <button type="button" class="cat-it" data-cat="it">{{ category_icon('it') }}<span>{{ _('it')|upper }}</span></button>
         </div>
     </div>
     <section id="home_widgets" class="home-widgets hide_if_nojs" data-geocode-url="{{ url_for('widgets_geocode') }}" data-weather-url="{{ url_for('widgets_weather') }}" data-locate-url="{{ url_for('widgets_locate') }}" aria-label="{{ _('Widgets') }}"></section>

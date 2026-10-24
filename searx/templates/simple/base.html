@@ -54,9 +54,9 @@
       {%- endblock -%}
       {%- block linkto_preferences -%}
         {%- if request.args.get('preferences') -%}
-          <a href="{{ url_for('preferences') }}?preferences={{ request.args.get('preferences') }}&preferences_preview_only=true" class="link_on_top_preferences">{{ icon_big('settings') }}<span>{{ _('Preferences') }}</span></a>
+          <a href="{{ url_for('preferences') }}?preferences={{ request.args.get('preferences') }}&preferences_preview_only=true" class="link_on_top_preferences">{% include 'simple/elements/sliders_icon.html' %}<span>{{ _('Preferences') }}</span></a>
         {%- else -%}
-          <a href="{{ url_for('preferences') }}" class="link_on_top_preferences">{{ icon_big('settings') }}<span>{{ _('Preferences') }}</span></a>
+          <a href="{{ url_for('preferences') }}" class="link_on_top_preferences">{% include 'simple/elements/sliders_icon.html' %}<span>{{ _('Preferences') }}</span></a>
         {%- endif -%}
       {%- endblock -%}
       {%- include 'simple/elements/apps.html' -%}
