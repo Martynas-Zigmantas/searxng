@@ -100,23 +100,23 @@ const howLive = frame(
 );
 
 const howAccount = frame(
-  'How the Alexandria account works',
+  'The Alexandria account is your Epistle account',
   `<div style="display:flex;align-items:center;gap:6px">
-    ${box('You', 'tap <b>Sign in</b> on Alexandria (top right)', { w: 220 })}
-    ${arrow('', 70)}
-    ${box('Alexandria account', 'Pocket ID · id.jack-sally.com<br>your <b>passkey</b> (Face ID, fingerprint), no password. Keeps you signed in for 30 days', { fill: C.plum, fg: C.white, border: C.plum, w: 330 })}
-    ${arrow('signed in', 100)}
-    ${box('Alexandria', 'your avatar + account card; shortcuts, recent searches and weather city sync to every device', { w: 300 })}
+    ${box('You', 'signed in to Epistle mail in this browser', { w: 220 })}
+    ${arrow('', 60)}
+    ${box('Alexandria', 'first page you open: a split-second hop to the webmail <b>/epistle/alexandria</b>', { w: 300 })}
+    ${arrow('who is this?', 110)}
+    ${box('Epistle', 'webmail.kodatrade.co.uk · checks its own sign-in cookie, sends back a <b>one-time code</b>', { fill: C.plum, fg: C.white, border: C.plum, w: 330 })}
   </div>
   <div style="display:flex;align-items:center;gap:6px">
-    ${box('An app', 'Mail, Drive, Docs, Git… from the launcher', { w: 220 })}
-    ${arrow('who is this?', 120)}
-    ${box('Same Pocket ID session', 'already signed in, so it answers straight away', { w: 300 })}
-    ${arrow('', 70)}
-    ${box('You are in', 'no login screen, like Gmail after signing in to Google', { w: 290 })}
+    ${box('Alexandria server', 'swaps the code (PKCE) with epistle-api for your address + name', { w: 300 })}
+    ${arrow('', 60)}
+    ${box('You are in', 'avatar + account card, no click. Shortcuts, recent searches, weather city sync', { w: 330 })}
+    <div style="width:120px;text-align:center;color:#8a7a84;font-size:16px">or, not signed<br>in to Epistle</div>
+    ${box('Guest', 'back at once; <b>Sign in</b> opens the Epistle sign-in (password + 2FA) and comes back', { w: 330 })}
   </div>
   <div style="color:${C.ink};font-size:18px;background:#f6eef3;border-radius:16px;padding:16px 22px;max-width:1150px">
-    <b>Sign out</b> on Alexandria ends the Pocket ID session too: the next app you open asks for your passkey again (apps already open keep their own session until it runs out).
+    Checked again every 6 h: sign out of Epistle and Alexandria follows. <b>Sign out</b> on Alexandria signs out of Alexandria only (and stops the automatic sign-in until you press Sign in).
   </div>`,
   640
 );
@@ -135,7 +135,7 @@ const screens = `
   </div>
   ${shot('home-dark-phone.png', 360, 'Phone')}
   <div style="display:flex;flex-direction:column;gap:30px">
-    ${shot('launcher.png', 420, 'App launcher: Mail (Epistle), Drive, Photos…')}
+    ${shot('launcher.png', 420, 'App launcher: Mail (Epistle), Drive, Bitwarden…')}
     ${shot('prefs.png', 420, 'Preferences')}
   </div>
 </div>`;

@@ -1,6 +1,5 @@
 # Alexandria on node2: Portainer Git stack "alexandria" (repo Martynas-Cloud/searxng, ref refs/heads/master,
-# compose path deploy/alexandria.portainer.yml). Environment variables: only the three ALEXANDRIA_OIDC_* below,
-# for the Alexandria account; without them everything else works.
+# compose path deploy/alexandria.portainer.yml). No environment variables needed.
 # Portainer can't build: run ~/searxng/deploy/build-image.sh on node2 first, then deploy / "Pull and redeploy".
 # search.jack-sally.com -> reverse proxy -> 192.168.178.27:48777
 name: alexandria
@@ -16,12 +15,11 @@ services:
     environment:
       - SEARXNG_BASE_URL=https://search.jack-sally.com/
       - SEARXNG_VALKEY_URL=valkey://alexandria-valkey:6379/0
-      # Alexandria account (searx/accounts.py): sign in with Pocket ID (deploy/pocket-id.portainer.yml).
-      # Set these three as stack environment variables in Portainer (values in Bitwarden
-      # "Alexandria account (Pocket ID)"); left empty there is no Sign in button.
-      - ALEXANDRIA_OIDC_ISSUER=${ALEXANDRIA_OIDC_ISSUER:-}
-      - ALEXANDRIA_OIDC_CLIENT_ID=${ALEXANDRIA_OIDC_CLIENT_ID:-}
-      - ALEXANDRIA_OIDC_CLIENT_SECRET=${ALEXANDRIA_OIDC_CLIENT_SECRET:-}
+      # The Alexandria account = the Epistle account (searx/accounts.py): browsers bounce through the webmail,
+      # and the one-time code is swapped with epistle-api on this server (its published port 28881).
+      - ALEXANDRIA_EPISTLE_URL=https://webmail.kodatrade.co.uk
+      - ALEXANDRIA_EPISTLE_API=http://host.docker.internal:28881
+    extra_hosts: [ "host.docker.internal:host-gateway" ]
     volumes:
       # On first start the image writes /etc/searxng/settings.yml here with a random secret_key and
       # `use_default_settings: true` (everything else comes from searx/settings.yml in the image).

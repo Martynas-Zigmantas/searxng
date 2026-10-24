@@ -1,28 +1,32 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
-"""The Alexandria account: sign in with Pocket ID (OpenID Connect), sync the start page.
+"""The Alexandria account is your Epistle account (Epistle = the mail service).
 
-Pocket ID is the identity provider for all the self-hosted apps, so signing in
-here also signs you in "everywhere" (Nextcloud, BookStack, Forgejo, ... log in
-through the same Pocket ID session), the way a Google account works.
+Signed in to Epistle's webmail in this browser = signed in to Alexandria, with no
+click: the first page you open bounces once through the webmail, which says who is
+signed in there (a one-time code, swapped server to server for the address and
+name).  The Epistle side is ``server/internal/api/alexandria.go`` in the epistle
+repo; the webmail's nginx hands ``/epistle/alexandria`` to it.
 
-Turned on by three environment variables (the stack in Portainer):
-
-- ``ALEXANDRIA_OIDC_ISSUER``         e.g. ``https://id.jack-sally.com``
-- ``ALEXANDRIA_OIDC_CLIENT_ID``      the OIDC client made for Alexandria in Pocket ID
-- ``ALEXANDRIA_OIDC_CLIENT_SECRET``  its secret
-
-Without them there is no sign-in button and nothing else changes.
+- ``ALEXANDRIA_EPISTLE_URL``  the webmail as browsers open it, default
+  ``https://webmail.kodatrade.co.uk``; ``off`` = no accounts at all.
+- ``ALEXANDRIA_EPISTLE_API``  where this server swaps the code, default the same
+  host (``<url>/v1/alexandria/token``).
 
 Routes:
 
-- ``/account/login``     -> Pocket ID (authorization code + PKCE)
-- ``/account/callback``  <- back from Pocket ID; the profile goes into the signed session cookie
-- ``/account/logout``    -> clears the session and ends the Pocket ID session too
+- ``/account/login``     -> the webmail (``prompt=none`` for the silent check, else
+                            its sign-in page if needed, then straight back)
+- ``/account/callback``  <- back from the webmail with a code (or ``login_required``)
+- ``/account/logout``    -> signs out of Alexandria only, and stops the silent sign-in
+                            until "Sign in" is clicked again
 - ``/account/data``      GET / PUT the synced start page state (shortcuts, recent searches,
-                         weather city, widget switches) as one small JSON object per account
+                         weather city, widget switches), one small JSON per account
 
-The synced state is stored in SQLite next to SearXNG's cache (the persistent
-``alexandria-data`` volume), keyed by the account's OIDC ``sub``.
+When it runs by itself: a browser page load (``Sec-Fetch-Mode: navigate``) of the
+start page, results or preferences, at most every ``RECHECK_GUEST`` for guests and
+every ``RECHECK_SIGNED_IN`` for accounts (so signing out of Epistle signs you out
+here too, at the next check).  The synced state is SQLite in the ``alexandria-data``
+volume, keyed by the mailbox address.
 """
 
 import base64
@@ -35,6 +39,7 @@ import tempfile
 import threading
 import time
 import typing as t
+import urllib.error
 import urllib.request
 from urllib.parse import urlencode
 
@@ -45,49 +50,30 @@ from searx import get_setting, logger
 
 log = logger.getChild("accounts")
 
+DEFAULT_EPISTLE = "https://webmail.kodatrade.co.uk"
 SYNC_KEYS = ("sxng-home-prefs", "sxng-home-history", "sxng-home-shortcuts", "sxng-home-place")
 SYNC_MAX_BYTES = 64 * 1024
 SESSION_DAYS = 30
-_DISCOVERY_TTL = 3600
-_discovery: tuple[float, dict[str, t.Any]] | None = None
+RECHECK_GUEST = 12 * 3600
+RECHECK_SIGNED_IN = 6 * 3600
+CHECK_COOKIE = "alexandria_checked"  # a guest was checked recently: no bounce until it runs out
+SIGNED_OUT_COOKIE = "alexandria_signed_out"  # signed out here: no silent sign-in until "Sign in"
+SILENT_PATHS = ("/", "/search", "/preferences")
 _db_lock = threading.Lock()
 
 
-def _fetch_json(url: str, form: dict[str, str] | None = None, token: str = "") -> dict[str, t.Any]:
-    # Pocket ID is our own server (often on the LAN): talk to it directly, not through the
-    # engines' outgoing network (proxies, http disabled, ...)
-    body = urlencode(form).encode() if form is not None else None
-    req = urllib.request.Request(url, data=body, headers={"Accept": "application/json"})
-    if body is not None:
-        req.add_header("Content-Type", "application/x-www-form-urlencoded")
-    if token:
-        req.add_header("Authorization", "Bearer " + token)
-    with urllib.request.urlopen(req, timeout=8) as resp:  # nosec B310: issuer URL comes from our own config
-        return json.loads(resp.read().decode())
+def epistle_url() -> str:
+    url = os.environ.get("ALEXANDRIA_EPISTLE_URL", DEFAULT_EPISTLE).strip().rstrip("/")
+    return "" if url.lower() in ("", "off", "none", "no") else url
 
 
-def _config() -> dict[str, str] | None:
-    issuer = os.environ.get("ALEXANDRIA_OIDC_ISSUER", "").strip().rstrip("/")
-    client_id = os.environ.get("ALEXANDRIA_OIDC_CLIENT_ID", "").strip()
-    secret = os.environ.get("ALEXANDRIA_OIDC_CLIENT_SECRET", "").strip()
-    if not (issuer and client_id and secret):
-        return None
-    return {"issuer": issuer, "client_id": client_id, "secret": secret}
+def _token_url() -> str:
+    api = os.environ.get("ALEXANDRIA_EPISTLE_API", "").strip().rstrip("/") or epistle_url()
+    return api + "/v1/alexandria/token"
 
 
 def enabled() -> bool:
-    return _config() is not None
-
-
-def _metadata() -> dict[str, t.Any]:
-    global _discovery  # pylint: disable=global-statement
-    cfg = _config()
-    assert cfg
-    if _discovery and time.time() - _discovery[0] < _DISCOVERY_TTL:
-        return _discovery[1]
-    meta = _fetch_json(cfg["issuer"] + "/.well-known/openid-configuration")
-    _discovery = (time.time(), meta)
-    return meta
+    return bool(epistle_url())
 
 
 def _base_url() -> str:
@@ -101,7 +87,7 @@ def _callback_url() -> str:
 
 def _safe_next(target: str | None) -> str:
     # only same-site paths, never an open redirect
-    if target and target.startswith("/") and not target.startswith("//"):
+    if target and target.startswith("/") and not target.startswith("//") and "\\" not in target:
         return target
     return "/"
 
@@ -111,92 +97,105 @@ def current() -> dict[str, str] | None:
     return account if isinstance(account, dict) else None
 
 
+def _swap(code: str, verifier: str) -> dict[str, t.Any]:
+    # Epistle is our own server: talk to it directly, not through the engines' outgoing network
+    body = json.dumps({"code": code, "code_verifier": verifier, "redirect_uri": _callback_url()}).encode()
+    req = urllib.request.Request(
+        _token_url(), data=body, headers={"Content-Type": "application/json", "Accept": "application/json"}
+    )
+    with urllib.request.urlopen(req, timeout=8) as resp:  # nosec B310: the URL comes from our own config
+        return json.loads(resp.read().decode())
+
+
 # ----------------------------------------------------------------------- sign in / out
+
+
+def _to_epistle(next_path: str, silent: bool):
+    verifier = secrets.token_urlsafe(48)
+    challenge = base64.urlsafe_b64encode(hashlib.sha256(verifier.encode()).digest()).decode().rstrip("=")
+    state = secrets.token_urlsafe(24)
+    flask.session["epistle"] = {"state": state, "verifier": verifier, "next": next_path, "silent": silent}
+    params = {"redirect_uri": _callback_url(), "state": state, "code_challenge": challenge}
+    if silent:
+        params["prompt"] = "none"
+    response = flask.redirect(epistle_url() + "/epistle/alexandria?" + urlencode(params))
+    response.headers["Cache-Control"] = "no-store"
+    return response
 
 
 def login():
     if not enabled():
         return flask.redirect("/")
-    meta = _metadata()
-    verifier = secrets.token_urlsafe(48)
-    challenge = base64.urlsafe_b64encode(hashlib.sha256(verifier.encode()).digest()).decode().rstrip("=")
-    state = secrets.token_urlsafe(24)
-    flask.session["oidc"] = {
-        "state": state,
-        "verifier": verifier,
-        "next": _safe_next(flask.request.args.get("next")),
-    }
-    cfg = _config()
-    assert cfg
-    params = {
-        "response_type": "code",
-        "client_id": cfg["client_id"],
-        "redirect_uri": _callback_url(),
-        "scope": "openid profile email",
-        "state": state,
-        "code_challenge": challenge,
-        "code_challenge_method": "S256",
-    }
-    return flask.redirect(meta["authorization_endpoint"] + "?" + urlencode(params))
+    response = _to_epistle(_safe_next(flask.request.args.get("next")), silent=False)
+    response.delete_cookie(SIGNED_OUT_COOKIE)
+    return response
 
 
 def callback():
-    pending = flask.session.pop("oidc", None)
-    cfg = _config()
-    if not (cfg and isinstance(pending, dict)):
+    pending = flask.session.pop("epistle", None)
+    if not (enabled() and isinstance(pending, dict)):
         return flask.redirect("/")
-    if flask.request.args.get("error") or flask.request.args.get("state") != pending.get("state"):
-        log.warning("sign-in rejected: %s", flask.request.args.get("error") or "state mismatch")
-        return flask.redirect(pending.get("next") or "/")
-
-    meta = _metadata()
+    next_path = _safe_next(pending.get("next"))
+    args = flask.request.args
+    response = flask.redirect(next_path)
+    if args.get("state") != pending.get("state"):
+        log.warning("sign-in rejected: state mismatch")
+        return response
+    if args.get("error"):
+        # nobody signed in to Epistle in this browser: a guest (and an account that was signed out there ends here)
+        flask.session.pop("account", None)
+        response.set_cookie(CHECK_COOKIE, "1", max_age=RECHECK_GUEST, httponly=True, samesite="Lax")
+        return response
     try:
-        tokens = _fetch_json(
-            meta["token_endpoint"],
-            form={
-                "grant_type": "authorization_code",
-                "code": flask.request.args.get("code", ""),
-                "redirect_uri": _callback_url(),
-                "client_id": cfg["client_id"],
-                "client_secret": cfg["secret"],
-                "code_verifier": pending["verifier"],
-            },
-        )
-        # the profile comes straight from the issuer with the fresh access token
-        info = _fetch_json(meta["userinfo_endpoint"], token=tokens["access_token"])
-    except Exception as exc:  # pylint: disable=broad-except
+        info = _swap(args.get("code", ""), pending["verifier"])
+    except (urllib.error.URLError, ValueError, KeyError) as exc:
         log.error("sign-in failed: %s", exc)
-        return flask.redirect(pending.get("next") or "/")
-
-    if not info.get("sub"):
-        return flask.redirect(pending.get("next") or "/")
-    name = info.get("name") or info.get("preferred_username") or info.get("email") or ""
+        response.set_cookie(CHECK_COOKIE, "1", max_age=RECHECK_GUEST, httponly=True, samesite="Lax")
+        return response
+    email = str(info.get("email") or "").lower()
+    if "@" not in email:
+        return response
+    name = str(info.get("name") or "").strip() or email.split("@")[0]
     flask.session.permanent = True
     flask.session["account"] = {
-        "sub": str(info["sub"]),
-        "name": str(name),
-        "given_name": str(info.get("given_name") or name.split(" ")[0]),
-        "email": str(info.get("email") or ""),
-        "picture": str(info.get("picture") or ""),
+        "sub": email,
+        "name": name,
+        "given_name": name.split(" ")[0],
+        "email": email,
+        "picture": "",
+        "checked": time.time(),
     }
-    flask.session["id_token"] = tokens.get("id_token", "")
-    return flask.redirect(pending.get("next") or "/")
+    return response
 
 
 def logout():
-    id_token = flask.session.pop("id_token", "")
     flask.session.pop("account", None)
-    flask.session.pop("oidc", None)
-    if not enabled():
-        return flask.redirect("/")
-    end = _metadata().get("end_session_endpoint")
-    if not end:
-        return flask.redirect("/")
-    # signing out of Alexandria signs out of the account everywhere, like Google
-    params = {"post_logout_redirect_uri": _base_url()}
-    if id_token:
-        params["id_token_hint"] = id_token
-    return flask.redirect(end + "?" + urlencode(params))
+    flask.session.pop("epistle", None)
+    response = flask.redirect("/")
+    # otherwise the next page would sign you straight back in from Epistle
+    response.set_cookie(SIGNED_OUT_COOKIE, "1", max_age=365 * 86400, httponly=True, samesite="Lax")
+    return response
+
+
+def silent_check():
+    """``before_request``: bounce a page load through Epistle when it's time to (see the module doc)."""
+    req = flask.request
+    if not enabled() or req.method != "GET" or req.path not in SILENT_PATHS:
+        return None
+    # only real page loads in a browser: not fetches, prefetches, bots or the tests
+    if req.headers.get("Sec-Fetch-Mode") != "navigate" or req.headers.get("Sec-Fetch-Dest", "document") != "document":
+        return None
+    if req.headers.get("Purpose") == "prefetch" or req.headers.get("Sec-Purpose"):
+        return None
+    if req.cookies.get(SIGNED_OUT_COOKIE):
+        return None
+    account = current()
+    if account:
+        if time.time() - float(account.get("checked") or 0) < RECHECK_SIGNED_IN:
+            return None
+    elif req.cookies.get(CHECK_COOKIE):
+        return None
+    return _to_epistle(_safe_next(req.full_path.rstrip("?")), silent=True)
 
 
 # ----------------------------------------------------------------------- sync store
@@ -272,12 +271,13 @@ def register(app: flask.Flask) -> None:
     app.add_url_rule("/account/callback", endpoint="account_callback", view_func=callback)
     app.add_url_rule("/account/logout", endpoint="account_logout", view_func=logout)
     app.add_url_rule("/account/data", endpoint="account_data", view_func=sync_data, methods=["GET", "PUT"])
+    app.before_request(silent_check)
 
     @app.context_processor
     def _account_context():
-        cfg = _config()
-        return {
-            "accounts_enabled": cfg is not None,
-            "account": current(),
-            "account_manage_url": (cfg["issuer"] + "/settings/account") if cfg else "",
-        }
+        account = current()
+        url = epistle_url()
+        manage = ""
+        if url and account:
+            manage = url + "/epistle/jesus-is-god/" + account["email"] + "/Preferences"
+        return {"accounts_enabled": bool(url), "account": account, "account_manage_url": manage}

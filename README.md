@@ -19,8 +19,8 @@ page full of widgets, and an app launcher for the rest of the self-hosted servic
 | **Look** | Google colours: white, Google blue, link-blue titles, the name in a blue → violet → rose → gold gradient, Inter (bundled, no Google Fonts call). Every result, the knowledge panel and the suggestions sit on their own card. Dark mode puts the cards on Epistle's deep plum; phones in light mode get a plum wash that fades out. Category tabs use Epistle-style glyphs in Epistle's folder colours (guitar for Music, scroll for News, amphora for Files…); Preferences is Epistle's sliders. Phones keep the name on top and a pill search box with a dropdown. |
 | **Logo** | A four-point compass star, outline only, its north tip in gold: it points you the right way. Sources in [`brand/`](brand/). |
 | **Start page** | Greeting + clock, your own shortcut tiles, weather (follows your rough location from your IP until you pick a city), recent searches, quick category chips. A **Customize** button turns each one on or off. |
-| **App launcher** | The 9-dot button top right: Mail (Epistle), Drive, Photos and Calendar (Nextcloud), Docs (BookStack), Git (Forgejo), n8n, Maps, YouTube. Each tile wears the service's real logo (Simple Icons, vendored in `searx/templates/simple/elements/app_logos.html`); Photos and Calendar get a small Nextcloud badge. Edit the list in `searx/settings.yml` → `brand.custom.apps` (`logo:`, `badge:`, `icon:`, colours). |
-| **Alexandria account** | Sign in top right, like a Google account: Pocket ID with your passkey, then your avatar and an account card (*Manage your Alexandria account*, *Sign out*). Your shortcuts, recent searches, weather city and widget switches follow you to every device you sign in on. The apps in the launcher log in through the same Pocket ID, so they open already signed in. See [Alexandria account](#alexandria-account). |
+| **App launcher** | The 9-dot button top right: Mail (Epistle), Drive (Nextcloud), Bitwarden (vault.jack-sally.com), Docs (BookStack), Git (Forgejo), n8n, Maps, YouTube. Each tile wears the service's real logo (Simple Icons, vendored in `searx/templates/simple/elements/app_logos.html`). Edit the list in `searx/settings.yml` → `brand.custom.apps` (`logo:`, `badge:`, `icon:`, colours). |
+| **Alexandria account** | Your **Epistle** account: signed in to Epistle mail in this browser = signed in here, with no click. Avatar + account card top right (*Manage your Epistle account*, *Sign out*); shortcuts, recent searches, weather city and widget switches follow you to every device. See [Alexandria account](#alexandria-account). |
 | **Loading** | The compass needle from the logo swings round and settles while something loads: in the search button while the next page comes, in the weather card, and in place of SearXNG's spinner (infinite scroll, image viewer). `client/simple/src/js/util/loading.ts`. |
 | **Less clutter** | No About link, no language / time / SafeSearch row on results (the defaults come from Preferences). |
 | **Little things** | `/` focuses the search box anywhere, a copy-link button on every result, a calmer phone layout. |
@@ -56,12 +56,12 @@ stored in a cookie for this browser. To copy the same setup to your phone, use t
 | `client/simple/src/js/main/home.ts` | Start page widgets. `extras.ts`: launcher, `/` hotkey, copy link, history. `util/homeStore.ts`: localStorage. |
 | `client/simple/src/fonts/` | Inter, variable (OFL). |
 | `searx/templates/simple/` | `index.html` (start page), `elements/apps.html` (launcher), `elements/category_icons.html` (tab glyphs), `elements/sliders_icon.html` (Preferences), `elements/brand_mark.html` (generated logo). |
-| `searx/accounts.py` | The Alexandria account: `/account/login`, `/account/callback`, `/account/logout`, `/account/data` (sync). Template `elements/account.html`, sync `client/simple/src/js/util/accountSync.ts`. |
+| `searx/accounts.py` | The Alexandria account (= Epistle account): `/account/login`, `/account/callback`, `/account/logout`, `/account/data` (sync), the silent check. Template `elements/account.html`, sync `client/simple/src/js/util/accountSync.ts`. |
 | `searx/home_widgets.py` | `/widgets/geocode`, `/widgets/weather`, `/widgets/locate` (IP → rough location): the server side of the weather widget. |
 | `searx/settings.yml` | Defaults baked into the image: name *Alexandria*, PWA colours, the app launcher list. |
 | `searx/static/themes/simple/` | **Built** theme (committed, like upstream). Never edit by hand, run the build. |
 | `brand/` | Logo: `src/mark.mjs` (the drawing; `N1` star is the logo, `N2` needle = the loading spinner), `src/logo.mjs` (renders `logo/*` + the theme's favicon / app icons). |
-| `deploy/` | `build-image.sh`, `alexandria.portainer.yml`, `settings.example.yml`, `pocket-id.portainer.yml` + `pocket-id/` (Alexandria-branded logo, background, favicon) for node2. |
+| `deploy/` | `build-image.sh`, `alexandria.portainer.yml`, `settings.example.yml` for node2. |
 | `docs/readme/` | These images. Sources in `docs/readme/src/`. |
 | everything else | Upstream SearXNG, unchanged. |
 
@@ -105,38 +105,29 @@ stack is ready, the first deploy is still to do; see BookStack → Self Hosting 
 
 ```bash
 PW=<path to playwright/index.mjs> node brand/src/logo.mjs            # logo + favicon + PWA icons, then rebuild the theme
+# dev server started with ALEXANDRIA_EPISTLE_URL=off (no silent sign-in hop while shooting)
 PW=... ALEXANDRIA_URL=http://127.0.0.1:5173 node docs/readme/src/shots.mjs   # fresh screenshots (instance running)
 PW=... node docs/readme/src/render.mjs                                # banner, diagrams, collage
 ```
 
 ## Alexandria account
 
-<p align="center"><img src="docs/readme/how-the-account-works.png" alt="Sign in on Alexandria with a passkey through Pocket ID; the apps then log in through the same Pocket ID session without asking" width="100%"></p>
+<p align="center"><img src="docs/readme/how-the-account-works.png" alt="Signed in to Epistle mail: the first Alexandria page hops to the webmail's /epistle/alexandria, which sends back a one-time code; Alexandria's server swaps it with epistle-api for the address and name, and you are signed in with no click. Not signed in: back as a guest, and Sign in opens the Epistle sign-in" width="100%"></p>
 
-Pocket ID (passkeys, OpenID Connect) is the account behind Alexandria and every app in the launcher: sign in once,
-then Mail, Drive, Docs and Git log in through the same Pocket ID session without asking again.
+There is no separate account: the Alexandria account **is the Epistle mailbox** (Martynas, 2026-10-24). How it works:
+like an OAuth code flow with PKCE, without client secrets, and nothing to set up in Epistle beyond its images.
 
 | Piece | Where |
 |---|---|
-| Pocket ID | node2. The published image `ghcr.io/pocket-id/pocket-id:v1` (nothing to build, no repo to mirror), run by a Portainer Git stack `pocket-id` whose compose file is **this repo's** `deploy/pocket-id.portainer.yml` (same repo URL + token as the `alexandria` stack, different compose path). `id.jack-sally.com` → `192.168.178.27:41411` |
-| Stack env (Pocket ID) | `POCKET_ID_ENCRYPTION_KEY` (`openssl rand -hex 32`; never change it later) |
-| Stack env (Alexandria) | `ALEXANDRIA_OIDC_ISSUER=https://id.jack-sally.com`, `ALEXANDRIA_OIDC_CLIENT_ID`, `ALEXANDRIA_OIDC_CLIENT_SECRET` (empty = no Sign in button) |
-| Sign-in session | Alexandria: signed cookie, 30 days. Pocket ID: set *Session duration* to 43200 min (30 days); its default of 60 min would make the apps ask again every hour |
-| Synced data | SQLite `alexandria-accounts.db` in the `alexandria-data` volume, one small JSON per account (`sub`) |
+| Alexandria | `searx/accounts.py`. A browser page load of `/`, `/search` or `/preferences` (`Sec-Fetch-Mode: navigate`) hops to `<ALEXANDRIA_EPISTLE_URL>/epistle/alexandria?prompt=none&…` when it's time: guests every 12 h, accounts every 6 h. **Sign in** = the same without `prompt=none` |
+| Epistle webmail (sogo-client) | nginx hands `/epistle/alexandria` to epistle-api (its sign-in cookie only exists on `/epistle/` paths); the sign-in page goes back there afterwards (`?next=`) |
+| epistle-api (epistle repo) | `server/internal/api/alexandria.go`: asks the webmail who the cookie belongs to, gives a 60 s one-time code to the allowlisted callback only, `POST /v1/alexandria/token` swaps it (+ PKCE verifier) for `{email, name}` |
+| Stack env (Alexandria) | `ALEXANDRIA_EPISTLE_URL=https://webmail.kodatrade.co.uk` (`off` = no accounts), `ALEXANDRIA_EPISTLE_API=http://host.docker.internal:28881` (epistle-api on node2). Both in `deploy/alexandria.portainer.yml`, nothing secret |
+| Session | Signed cookie, 30 days, re-checked against Epistle every 6 h |
+| Synced data | SQLite `alexandria-accounts.db` in the `alexandria-data` volume, one small JSON per mailbox |
 
-First setup, after both stacks are up:
-
-1. `https://id.jack-sally.com/setup`: create your user with a passkey (add a second passkey on another device).
-2. Application configuration: name **Alexandria**, accent `#1a73e8`, session duration `43200`; logo (light + dark)
-   `deploy/pocket-id/logo.svg`, background `deploy/pocket-id/background.jpg`, favicon `deploy/pocket-id/favicon.ico`.
-3. OIDC Clients → Add: name `Alexandria`, callback `https://search.jack-sally.com/account/callback`, logout callback
-   `https://search.jack-sally.com/`, PKCE on, logo `brand/logo/app-icon.svg`. Copy the client ID + secret.
-4. Put the three `ALEXANDRIA_OIDC_*` values into the `alexandria` stack's environment, *Pull and redeploy*.
-5. For each app, add another OIDC client in Pocket ID and point the app at it (Nextcloud `user_oidc`, BookStack
-   `AUTH_METHOD=oidc`, Forgejo authentication source, ...).
-
-Signing out of Alexandria ends the Pocket ID session too, so the next app you open asks for your passkey again;
-apps that are already open keep their own session until it runs out (they don't get a sign-out signal).
+**Sign out** on Alexandria signs out of Alexandria only and stops the automatic sign-in until you press *Sign in*
+again. Signing out of Epistle reaches Alexandria at its next check (within 6 h).
 
 ## Updating from upstream SearXNG
 

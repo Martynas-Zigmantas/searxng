@@ -380,7 +380,11 @@ const renderRecent = (card: HTMLElement): void => {
     return;
   }
   if (items.length === 0) {
-    card.append(el('<p class="home-muted">Your searches show up here. Only on this device, never on the server.</p>'));
+    // signed in, they're kept in the Epistle account too (accountSync.ts)
+    const where = document.querySelector(".account-menu")
+      ? "Kept in your Epistle account, on every device you sign in on."
+      : "Only on this device, never on the server.";
+    card.append(el(`<p class="home-muted">Your searches show up here. ${where}</p>`));
     return;
   }
 

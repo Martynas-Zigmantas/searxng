@@ -30,13 +30,12 @@ brand:
     #
     # App launcher (grid button top right).  icon: mail, drive, photos,
     # calendar, docs, git, flow, maps, video, link, epistle.  logo: a brand logo from
-    # simple/elements/app_logos.html (nextcloud, bookstack, forgejo, n8n, openstreetmap,
+    # simple/elements/app_logos.html (nextcloud, bitwarden, bookstack, forgejo, n8n, openstreetmap,
     # youtube), drawn instead of the icon; badge: the same, small in the corner.
     apps:
       - {name: Mail, url: "https://webmail.kodatrade.co.uk", icon: epistle, color: "#6B1D52", color2: "#2A0820"}
       - {name: Drive, url: "https://cloud.jack-sally.com/apps/files", logo: nextcloud, color: "#0082C9", color2: "#00639a"}
-      - {name: Photos, url: "https://cloud.jack-sally.com/apps/photos", icon: photos, badge: nextcloud, color: "#0082C9", color2: "#00639a"}
-      - {name: Calendar, url: "https://cloud.jack-sally.com/apps/calendar", icon: calendar, badge: nextcloud, color: "#0082C9", color2: "#00639a"}
+      - {name: Bitwarden, url: "https://vault.jack-sally.com", logo: bitwarden, color: "#175DDC", color2: "#0f43a3"}
       - {name: Docs, url: "https://docs.jack-sally.com", logo: bookstack, color: "#0288D1", color2: "#01579b"}
       - {name: Git, url: "https://git.jack-sally.com", logo: forgejo, color: "#FB923C", color2: "#d4540f"}
       - {name: n8n, url: "https://n8n.jack-sally.com", logo: n8n, color: "#EA4B71", color2: "#b9294d"}
