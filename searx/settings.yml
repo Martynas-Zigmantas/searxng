@@ -2,7 +2,7 @@ general:
   # Debug mode, only for development. Is overwritten by ${SEARXNG_DEBUG}
   debug: false
   # displayed name
-  instance_name: "SearXNG"
+  instance_name: "Alexandria"
   # For example: https://example.com/privacy
   privacypolicy_url: false
   # use true to use your own donation page written in searx/info/en/donate.md
@@ -22,20 +22,32 @@ brand:
   public_instances: https://searx.space
   wiki_url: https://github.com/searxng/searxng/wiki
   issue_url: https://github.com/searxng/searxng/issues
-  # custom:
-  #   # Custom entries in the footer: [title]: [link]
-  #   links:
-  #     Uptime: https://uptime.searxng.org/history/darmarit-org
-  #     About: "https://searxng.org"
-  # pwa_colors:
-  #   # Custom settings for PWA icon an colors used in manifest.json
-  #   # Default colors are:
-  #    theme_color_light: "#3050ff"
-  #    background_color_light: "fff"
-  #    theme_color_dark: "#58f"
-  #    background_color_dark: "#222428"
-  #    theme_color_black: "#3050ff"
-  #    background_color_black: "#000"
+  custom:
+    # Custom entries in the footer: [title]: [link]
+    # links:
+    #   Uptime: https://uptime.searxng.org/history/darmarit-org
+    #   About: "https://searxng.org"
+    #
+    # App launcher (grid button top right).  icon: mail, drive, photos,
+    # calendar, docs, git, flow, maps, video, link, epistle
+    apps:
+      - {name: Mail, url: "https://webmail.kodatrade.co.uk", icon: epistle, color: "#6B1D52", color2: "#2A0820"}
+      - {name: Drive, url: "https://cloud.jack-sally.com/apps/files", icon: drive, color: "#0082c9", color2: "#00c2ff"}
+      - {name: Photos, url: "https://cloud.jack-sally.com/apps/photos", icon: photos, color: "#f9b208", color2: "#ff5e7e"}
+      - {name: Calendar, url: "https://cloud.jack-sally.com/apps/calendar", icon: calendar, color: "#3d7bff", color2: "#7b5cff"}
+      - {name: Docs, url: "https://docs.jack-sally.com", icon: docs, color: "#0ba360", color2: "#3cba92"}
+      - {name: Git, url: "https://git.jack-sally.com", icon: git, color: "#ff7a18", color2: "#d63c00"}
+      - {name: n8n, url: "https://n8n.jack-sally.com", icon: flow, color: "#ea4b71", color2: "#a52bd8"}
+      - {name: Maps, url: "https://www.openstreetmap.org", icon: maps, color: "#12c2a0", color2: "#2a7fff"}
+      - {name: YouTube, url: "https://www.youtube.com", icon: video, color: "#ff3b3b", color2: "#c00000"}
+  # PWA icon colours used in manifest.json (Alexandria: Epistle plum + white)
+  pwa_colors:
+    theme_color_light: "#4A1238"
+    background_color_light: "#FFFFFF"
+    theme_color_dark: "#2A0820"
+    background_color_dark: "#1F0817"
+    theme_color_black: "#2A0820"
+    background_color_black: "#0D030A"
 
 search:
   # Filter results. 0: None, 1: Moderate, 2: Strict

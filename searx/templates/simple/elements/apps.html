@@ -1,0 +1,34 @@
+{#- App launcher: the grid button top right (brand.custom.apps in settings.yml) -#}
+{%- set app_glyphs = {
+  "epistle": '<path d="M3.1 12C7.2 5 15.1 5 20.9 15.6"/><path d="M3.1 12C7.2 19 15.1 19 20.9 8.4"/>',
+  "mail": '<path d="M4 7.5A1.5 1.5 0 0 1 5.5 6h13A1.5 1.5 0 0 1 20 7.5v9a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 16.5z"/><path d="m4.5 7 7.5 6 7.5-6"/>',
+  "drive": '<path d="M7.5 18.5a4 4 0 0 1-.6-7.96 5.5 5.5 0 0 1 10.6 1.46A3.25 3.25 0 0 1 17 18.5z"/>',
+  "photos": '<rect x="4" y="5" width="16" height="14" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="m5 17 4.5-4.5 3 3 2-2L19 18"/>',
+  "calendar": '<rect x="4" y="5.5" width="16" height="14" rx="2"/><path d="M4 10h16M8.5 3.5v4M15.5 3.5v4"/><path d="M8 14h2M12 14h2M8 16.5h2"/>',
+  "docs": '<path d="M7 3.5h7l4 4V19a1.5 1.5 0 0 1-1.5 1.5h-9.5A1.5 1.5 0 0 1 5.5 19V5A1.5 1.5 0 0 1 7 3.5z"/><path d="M13.5 3.5V8h4.5M8.5 12h7M8.5 15h7M8.5 18h4"/>',
+  "git": '<circle cx="7" cy="6" r="2"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="9" r="2"/><path d="M7 8v8M17 11c0 3-3 3.5-8.5 5.5"/>',
+  "flow": '<rect x="3.5" y="9.5" width="5" height="5" rx="1.2"/><rect x="15.5" y="4" width="5" height="5" rx="1.2"/><rect x="15.5" y="15" width="5" height="5" rx="1.2"/><path d="M8.5 12h3c1.5 0 1.5-5.5 4-5.5M11.5 12c1.5 0 1.5 5.5 4 5.5"/>',
+  "maps": '<path d="M12 20.5s-6.5-5.6-6.5-10.5a6.5 6.5 0 0 1 13 0c0 4.9-6.5 10.5-6.5 10.5z"/><circle cx="12" cy="10" r="2.3"/>',
+  "video": '<rect x="3.5" y="6" width="17" height="12" rx="3.5"/><path d="m10.5 9.5 4 2.5-4 2.5z" fill="currentColor"/>',
+  "link": '<path d="M10 14a4 4 0 0 0 5.66 0l3-3a4 4 0 0 0-5.66-5.66l-1 1M14 10a4 4 0 0 0-5.66 0l-3 3a4 4 0 0 0 5.66 5.66l1-1"/>',
+} -%}
+{%- set apps = get_setting('brand.custom.apps') or [] -%}
+{%- if apps -%}
+<div class="app-launcher">
+  <button type="button" class="app-launcher-btn" aria-haspopup="true" aria-expanded="false" aria-controls="app_launcher_panel" title="{{ _('Apps') }}">
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      {%- for y in (5, 12, 19) -%}{%- for x in (5, 12, 19) -%}<circle cx="{{ x }}" cy="{{ y }}" r="2.1"/>{%- endfor -%}{%- endfor -%}
+    </svg>
+  </button>
+  <div id="app_launcher_panel" class="app-launcher-panel" role="menu" hidden>
+    <div class="app-launcher-grid">
+    {%- for app in apps %}
+      <a class="app-tile" role="menuitem" href="{{ app.url }}" rel="noreferrer" style="--app-a: {{ app.color }}; --app-b: {{ app.color2 or app.color }}">
+        <span class="app-tile-icon"><svg viewBox="0 0 24 24" aria-hidden="true">{{ (app_glyphs[app.icon] or app_glyphs['link'])|safe }}</svg></span>
+        <span class="app-tile-name">{{ app.name }}</span>
+      </a>
+    {%- endfor %}
+    </div>
+  </div>
+</div>
+{%- endif -%}

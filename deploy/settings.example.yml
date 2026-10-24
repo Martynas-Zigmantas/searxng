@@ -1,0 +1,15 @@
+# /home/ar_admin/alexandria/config/settings.yml on node2 (example; the real one has its own secret_key).
+# Everything not listed here comes from searx/settings.yml in the image (Alexandria name, app launcher, colours).
+use_default_settings: true
+
+server:
+  secret_key: "change-me"          # openssl rand -hex 32
+  limiter: false                   # personal instance behind the reverse proxy
+  image_proxy: true
+
+search:
+  favicon_resolver: "duckduckgo"   # site icons next to results (fetched by the server, not your browser)
+  formats: [html, json]
+
+valkey:
+  url: valkey://alexandria-valkey:6379/0

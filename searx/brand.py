@@ -12,11 +12,28 @@ __all__ = ["SettingsBrand"]
 import msgspec
 
 
+class BrandApp(msgspec.Struct, kw_only=True, forbid_unknown_fields=True):
+    """One tile in the app launcher (the grid button top right)."""
+
+    name: str
+    url: str
+    icon: str = "link"
+    """One of the glyphs in ``simple/elements/apps.html``: mail, drive, photos,
+    calendar, docs, git, flow, maps, video, link, epistle."""
+    color: str = "#4f6bff"
+    """Start colour of the tile gradient."""
+    color2: str = ""
+    """End colour of the tile gradient (defaults to ``color``)."""
+
+
 class BrandCustom(msgspec.Struct, kw_only=True, forbid_unknown_fields=True):
     """Custom settings in the brand section."""
 
     links: dict[str, str] = {}
     """Custom entries in the footer of the WEB page: ``[title]: [link]``"""
+
+    apps: list[BrandApp] = []
+    """Tiles of the app launcher, in order.  Empty list hides the launcher."""
 
 
 class ThemeColors(msgspec.Struct, kw_only=True, forbid_unknown_fields=True):

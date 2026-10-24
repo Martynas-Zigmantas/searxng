@@ -2,7 +2,19 @@
 {% from 'simple/icons.html' import icon_big %}
 {% block content %}
 <div class="index">
-    <div class="title"><h1>SearXNG</h1></div>
-    {% include 'simple/simple_search.html' %}
+    <div class="home-hero">
+        <p id="home_greeting" class="home-greeting hide_if_nojs" aria-live="polite"></p>
+        <div class="title"><h1 class="home-wordmark">{% include 'simple/elements/brand_mark.html' %}<span>{{ instance_name }}</span></h1></div>
+        {% include 'simple/simple_search.html' %}
+        <div class="home-chips hide_if_nojs" data-search-url="{{ url_for('search') }}">
+            <button type="button" data-cat="images">{{ icon_big('image') }}<span>{{ _('images') }}</span></button>
+            <button type="button" data-cat="videos">{{ icon_big('play') }}<span>{{ _('videos') }}</span></button>
+            <button type="button" data-cat="news">{{ icon_big('newspaper') }}<span>{{ _('news') }}</span></button>
+            <button type="button" data-cat="map">{{ icon_big('location') }}<span>{{ _('map') }}</span></button>
+            <button type="button" data-cat="music">{{ icon_big('musical-notes') }}<span>{{ _('music') }}</span></button>
+            <button type="button" data-cat="it">{{ icon_big('layers') }}<span>{{ _('it')|upper }}</span></button>
+        </div>
+    </div>
+    <section id="home_widgets" class="home-widgets hide_if_nojs" data-geocode-url="{{ url_for('widgets_geocode') }}" data-weather-url="{{ url_for('widgets_weather') }}" aria-label="{{ _('Widgets') }}"></section>
 </div>
 {% endblock %}

@@ -1,0 +1,31 @@
+# Alexandria on node2 (Portainer stack "alexandria"). Build the image first: ~/searxng/deploy/build-image.sh
+# search.jack-sally.com -> reverse proxy -> 192.168.178.27:48777
+name: alexandria
+
+services:
+  core:
+    container_name: alexandria-core
+    image: alexandria:latest
+    pull_policy: never
+    restart: always
+    ports:
+      - "0.0.0.0:48777:8080"
+    environment:
+      - SEARXNG_BASE_URL=https://search.jack-sally.com/
+    volumes:
+      # settings.yml lives here (secret_key, server.limiter, ...). Must start with
+      # `use_default_settings: true` so the Alexandria defaults (name, app launcher) apply.
+      - /home/ar_admin/alexandria/config:/etc/searxng
+      - alexandria-data:/var/cache/searxng
+
+  valkey:
+    container_name: alexandria-valkey
+    image: docker.io/valkey/valkey:9-alpine
+    command: valkey-server --save 300 1 --save 60 1000 --loglevel warning
+    restart: always
+    volumes:
+      - alexandria-valkey:/data
+
+volumes:
+  alexandria-data:
+  alexandria-valkey:

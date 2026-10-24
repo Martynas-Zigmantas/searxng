@@ -36,10 +36,15 @@ ready(() => {
   }
 });
 
+ready(() => {
+  void import("./main/extras.ts");
+});
+
 ready(
   () => {
     void import("./main/keyboard.ts");
     void import("./main/search.ts");
+    void import("./main/home.ts");
 
     if (settings.autocomplete) {
       void import("./main/autocomplete.ts");
