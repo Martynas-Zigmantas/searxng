@@ -1,0 +1,18 @@
+{%- extends "simple/page_with_header.html" -%}
+{#- Alexandria: search history. Drawn by client/simple/src/js/main/history.ts from localStorage (synced to the account
+    when signed in, searx/accounts.py); the server never sees the list. -#}
+{%- block content -%}
+  <div class="history-head">
+    <h1>{{ _('Search history') }}</h1>
+    <p class="history-where">
+      {%- if account -%}
+        {{ _('Kept in your Epistle account (%(email)s), on every device you sign in on. Only you can see it.', email=account.email) }}
+      {%- else -%}
+        {{ _('Only on this device, never on the server.') }}
+      {%- endif -%}
+    </p>
+  </div>
+  <div id="history_app" class="history-app" data-search-url="{{ url_for('search') }}">
+    <noscript><p>{{ _('Your search history needs JavaScript.') }}</p></noscript>
+  </div>
+{%- endblock -%}

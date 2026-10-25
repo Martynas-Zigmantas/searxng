@@ -7,7 +7,8 @@ const seed = () => {
   if (localStorage.getItem('seeded')) return;
   localStorage.setItem('seeded', '1');
   localStorage.setItem('sxng-home-place', JSON.stringify({ name: 'Leeds', region: 'England', lat: 53.796, lon: -1.548 }));
-  localStorage.setItem('sxng-home-history', JSON.stringify(['rust programming', 'best ergonomic keyboard', 'leeds weather weekend', 'nextcloud docker compose', 'self host a search engine']));
+  const now = Date.now();
+  localStorage.setItem('sxng-history', JSON.stringify(['rust programming', 'best ergonomic keyboard', 'leeds weather weekend', 'nextcloud docker compose', 'self host a search engine'].map((q, i) => ({ q, t: now - i * 3.6e6 }))));
 };
 const b = await chromium.launch();
 const take = async (name, path, { w = 1440, h = 900, scheme = 'light', click, clip } = {}) => {

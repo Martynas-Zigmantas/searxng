@@ -1,14 +1,16 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 /*
- * Start page widgets: greeting + clock, shortcuts, weather and recent
- * searches.  Everything is stored in this browser's
- * localStorage only; weather goes through this instance (/widgets/*).
+ * Start page widgets: greeting + clock, shortcuts, mail (signed in), weather,
+ * recent searches, on today's photo (backdrop.ts).  State is in this
+ * browser's localStorage (+ the account when signed in, accountSync.ts);
+ * weather, photo and mail go through this instance (/widgets/*, /account/mail).
  */
 
 import { listen } from "../toolkit.ts";
 import { type HomePrefs, history, homePrefs, saveHomePrefs } from "../util/homeStore.ts";
 import { needle, startLoading } from "../util/loading.ts";
+import { startBackdrop } from "./backdrop.ts";
 
 type Shortcut = { name: string; url: string };
 type Place = { name: string; region?: string; lat: number; lon: number; auto?: boolean; at?: number };
@@ -42,6 +44,8 @@ const ICON = {
     '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
   clock:
     '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 7v5l3 2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>',
+  mail: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5.5" width="17" height="13" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="m4.5 7 7.5 6 7.5-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  lock: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10.5" width="14" height="9.5" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>',
   pin: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="9.5" r="2.5" fill="currentColor"/></svg>'
 };
 
@@ -54,6 +58,7 @@ const WWW_RE = /^www\./;
 const HTTP_RE = /^https?:\/\//i;
 
 const root = document.getElementById("home_widgets");
+const signedIn = document.querySelector(".account-menu") !== null;
 const searchInput = document.getElementById("q") as HTMLInputElement | null;
 
 const esc = (text: string): string =>
@@ -371,12 +376,12 @@ const renderWeather = async (card: HTMLElement): Promise<void> => {
 
 const renderRecent = (card: HTMLElement): void => {
   const items = history.list();
-  card.innerHTML = `<h3>${ICON.clock}Recent searches${
-    items.length > 0 ? '<button type="button" class="home-link-btn" data-clear>Clear</button>' : ""
-  }</h3>`;
+  const all = root?.dataset.historyUrl ?? "/history";
+  // clearing it all is on /history ("Clear all")
+  card.innerHTML = `<h3>${ICON.clock}Recent searches<a class="home-link-btn" href="${esc(all)}">See all</a></h3>`;
 
   if (!homePrefs.remember) {
-    card.append(el('<p class="home-muted">Search history is off. Turn it on in Customize.</p>'));
+    card.append(el('<p class="home-muted">Search history is paused. Turn it back on in Customize.</p>'));
     return;
   }
   if (items.length === 0) {
@@ -400,20 +405,99 @@ const renderRecent = (card: HTMLElement): void => {
     list.append(item);
   }
   card.append(list);
-  listen("click", card.querySelector("[data-clear]") as HTMLElement, () => {
-    history.clear();
-    renderRecent(card);
-  });
 };
+
+/* -------------------------------------------------------------------- mail */
+
+type Letter = { from: string; email: string; subject: string; encrypted: boolean; date: string; url: string };
+type Mail = { state: string; unseen?: number; messages?: Letter[]; inbox_url?: string; compose_url?: string };
+
+const MAIL_REFRESH_MS = 90_000;
+
+const ago = (iso: string): string => {
+  const t = Date.parse(iso);
+  if (Number.isNaN(t)) return "";
+  const mins = Math.round((Date.now() - t) / 60_000);
+  if (mins < 1) return "now";
+  if (mins < 60) return `${mins}m`;
+  if (mins < 24 * 60) return `${Math.round(mins / 60)}h`;
+  if (mins < 6 * 24 * 60) return new Date(t).toLocaleDateString([], { weekday: "short" });
+  return new Date(t).toLocaleDateString([], { day: "numeric", month: "short" });
+};
+
+const renderMail = async (card: HTMLElement): Promise<void> => {
+  if (!card.querySelector(".home-mail-list, .home-mail-done")) {
+    card.innerHTML = `<h3>${ICON.mail}Inbox</h3><div class="home-weather-wait"></div>`;
+    card.querySelector(".home-weather-wait")?.append(needle("Loading mail"));
+  }
+  let mail: Mail = { state: "unavailable" };
+  try {
+    const res = await fetch(root?.dataset.mailUrl ?? "/account/mail", {
+      credentials: "same-origin",
+      cache: "no-store"
+    });
+    if (res.ok) mail = (await res.json()) as Mail;
+  } catch {
+    // offline: "not reachable" below
+  }
+  if (mail.state !== "ok") {
+    card.innerHTML = `<h3>${ICON.mail}Inbox</h3><p class="home-muted">Your mail isn’t reachable right now. It’ll show up here again on its own.</p>`;
+    return;
+  }
+  const unseen = mail.unseen ?? 0;
+  const letters = mail.messages ?? [];
+  const open = esc(mail.inbox_url ?? "#");
+  const head = `<h3>${ICON.mail}Inbox${
+    unseen ? `<span class="home-mail-count">${unseen > 999 ? "999+" : unseen} unread</span>` : ""
+  }<a class="home-link-btn" href="${open}">Open Epistle</a></h3>`;
+  if (letters.length === 0) {
+    card.innerHTML = `${head}<div class="home-mail-done"><span>✨</span><p><strong>You’re all caught up</strong>No unread letters in your Inbox.</p></div>`;
+    return;
+  }
+  const rows = letters
+    .map((m) => {
+      const subject = m.encrypted
+        ? `<span class="home-mail-lock">${ICON.lock}Encrypted letter</span>`
+        : esc(m.subject || "(no subject)");
+      return `<li><a href="${esc(m.url)}">
+        <span class="home-mail-avatar" style="--hue:${tileHue(m.email || m.from)}">${esc((m.from.trim()[0] ?? "?").toUpperCase())}</span>
+        <span class="home-mail-text"><strong>${esc(m.from)}</strong><span>${subject}</span></span>
+        <time>${ago(m.date)}</time></a></li>`;
+    })
+    .join("");
+  const more =
+    unseen > letters.length
+      ? `<a class="home-mail-more" href="${open}">+${unseen - letters.length} more unread</a>`
+      : "";
+  card.innerHTML = `${head}<ul class="home-mail-list">${rows}</ul>${more}`;
+};
+
+let mailTimer: number | undefined;
+
+const watchMail = (card: HTMLElement): void => {
+  void renderMail(card);
+  window.clearInterval(mailTimer);
+  mailTimer = window.setInterval(() => {
+    if (document.visibilityState === "visible" && card.isConnected) void renderMail(card);
+  }, MAIL_REFRESH_MS);
+};
+
+document.addEventListener("visibilitychange", () => {
+  const card = document.querySelector<HTMLElement>(".home-mail");
+  if (document.visibilityState === "visible" && card) void renderMail(card);
+});
 
 /* --------------------------------------------------------------- customize */
 
-const TOGGLES: [keyof HomePrefs, string][] = [
+type Toggle = { [K in keyof HomePrefs]: HomePrefs[K] extends boolean ? K : never }[keyof HomePrefs];
+
+const TOGGLES: [Toggle, string][] = [
   ["clock", "Greeting & clock"],
   ["shortcuts", "Shortcuts"],
+  ...(signedIn ? ([["mail", "Mail"]] as [Toggle, string][]) : []),
   ["weather", "Weather"],
   ["recent", "Recent searches"],
-  ["remember", "Remember my searches"],
+  ["remember", "Save my searches"],
   ["fahrenheit", "Use °F"]
 ];
 
@@ -439,8 +523,7 @@ const renderCustomize = (): HTMLElement => {
   });
   for (const input of panel.querySelectorAll<HTMLInputElement>("input[data-key]")) {
     listen("change", input, () => {
-      homePrefs[input.dataset.key as keyof HomePrefs] = input.checked;
-      if (input.dataset.key === "remember" && !input.checked) history.clear();
+      homePrefs[input.dataset.key as Toggle] = input.checked;
       saveHomePrefs();
       render(true);
     });
@@ -463,6 +546,11 @@ const render = (keepPanelOpen = false): void => {
   if (homePrefs.shortcuts) root.append(renderShortcuts());
 
   const cards = el('<div class="home-cards"></div>');
+  if (signedIn && homePrefs.mail) {
+    const card = el('<article class="home-card home-mail"></article>');
+    watchMail(card);
+    cards.append(card);
+  }
   if (homePrefs.weather) {
     const card = el('<article class="home-card home-weather"></article>');
     void renderWeather(card);
@@ -482,5 +570,6 @@ const render = (keepPanelOpen = false): void => {
   root.append(customize);
 };
 
+startBackdrop();
 render();
 setInterval(renderGreeting, 15_000);

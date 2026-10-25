@@ -14,7 +14,8 @@ const CSS = `
 *{box-sizing:border-box} body{margin:0;font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif}
 .serif{font-family:Inter,sans-serif;font-weight:600;letter-spacing:-0.04em}
 `;
-const markSvg = (fg, w) => `<svg viewBox="14 14 72 72" width="${w}" height="${w}">${mark(fg, C.gold)}</svg>`;
+// the logo as it is in the page: gold scrolls on a plum tile, whatever the background (fg kept for the callers)
+const markSvg = (_fg, w) => `<svg viewBox="0 0 100 100" width="${w}" height="${w}"><rect width="100" height="100" rx="22" fill="${C.plum}"/><g transform="translate(9 9) scale(.82)">${mark(C.gold, C.gold)}</g></svg>`;
 const img = (file) => `data:image/png;base64,${fs.readFileSync(SHOTS + file).toString('base64')}`;
 
 /* ------------------------------------------------------------------ banner */
@@ -111,7 +112,7 @@ const howAccount = frame(
   <div style="display:flex;align-items:center;gap:6px">
     ${box('Alexandria server', 'swaps the code (PKCE) with epistle-api for your address + name', { w: 300 })}
     ${arrow('', 60)}
-    ${box('You are in', 'avatar + account card, no click. Shortcuts, recent searches, weather city sync', { w: 330 })}
+    ${box('You are in', 'avatar + account card, no click. Your Inbox on the start page; preferences, history, shortcuts sync', { w: 330 })}
     <div style="width:120px;text-align:center;color:#8a7a84;font-size:16px">or, not signed<br>in to Epistle</div>
     ${box('Guest', 'back at once; <b>Sign in</b> opens the Epistle sign-in (password + 2FA) and comes back', { w: 330 })}
   </div>
@@ -130,7 +131,7 @@ const shot = (file, w, label) => `
 const screens = `
 <div style="width:1600px;height:900px;background:${C.deep};display:flex;align-items:center;justify-content:center;gap:34px;padding:40px">
   <div style="display:flex;flex-direction:column;gap:30px">
-    ${shot('home-light.png', 560, 'Start page: widgets, shortcuts, app launcher')}
+    ${shot('home-light.png', 560, 'Start page on a photo of the day')}
     ${shot('results-dark.png', 560, 'Results, dark mode')}
   </div>
   ${shot('home-dark-phone.png', 360, 'Phone')}

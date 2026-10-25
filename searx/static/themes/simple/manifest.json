@@ -3,8 +3,12 @@
     "file": "chunk/BuurKv-k.min.js",
     "name": "plugin"
   },
-  "_C5J5ND7d.min.js": {
-    "file": "chunk/C5J5ND7d.min.js",
+  "_CBSXloRL.min.js": {
+    "file": "chunk/CBSXloRL.min.js",
+    "name": "homestore"
+  },
+  "_CFOOKra3.min.js": {
+    "file": "chunk/CFOOKra3.min.js",
     "name": "loading"
   },
   "_DK4yUVpy.min.js": {
@@ -38,7 +42,8 @@
       "src/js/main/home.ts",
       "src/js/main/autocomplete.ts",
       "src/js/main/results.ts",
-      "src/js/main/preferences.ts"
+      "src/js/main/preferences.ts",
+      "src/js/main/history.ts"
     ]
   },
   "src/js/main/autocomplete.ts": {
@@ -52,23 +57,35 @@
     ]
   },
   "src/js/main/extras.ts": {
-    "file": "chunk/BKuOhVeB.min.js",
+    "file": "chunk/FJkZPpg7.min.js",
     "name": "extras",
     "src": "src/js/main/extras.ts",
     "isDynamicEntry": true,
     "imports": [
       "src/js/index.ts",
-      "_C5J5ND7d.min.js"
+      "_CBSXloRL.min.js",
+      "_CFOOKra3.min.js"
+    ]
+  },
+  "src/js/main/history.ts": {
+    "file": "chunk/CSEjr2H1.min.js",
+    "name": "history",
+    "src": "src/js/main/history.ts",
+    "isDynamicEntry": true,
+    "imports": [
+      "src/js/index.ts",
+      "_CBSXloRL.min.js"
     ]
   },
   "src/js/main/home.ts": {
-    "file": "chunk/CRAWp9Yq.min.js",
+    "file": "chunk/DUpXDaNi.min.js",
     "name": "home",
     "src": "src/js/main/home.ts",
     "isDynamicEntry": true,
     "imports": [
       "src/js/index.ts",
-      "_C5J5ND7d.min.js"
+      "_CBSXloRL.min.js",
+      "_CFOOKra3.min.js"
     ]
   },
   "src/js/main/keyboard.ts": {
@@ -146,10 +163,13 @@
     ]
   },
   "src/js/util/accountSync.ts": {
-    "file": "chunk/BsQj-Y9I.min.js",
+    "file": "chunk/Bo2wevSk.min.js",
     "name": "accountsync",
     "src": "src/js/util/accountSync.ts",
-    "isDynamicEntry": true
+    "isDynamicEntry": true,
+    "imports": [
+      "_CBSXloRL.min.js"
+    ]
   },
   "src/less/noscript.less": {
     "file": "sxng-noscript.min.css",

@@ -37,6 +37,7 @@ export const Endpoints = {
   index: "index",
   results: "results",
   preferences: "preferences",
+  history: "history",
   unknown: "unknown"
 } as const;
 

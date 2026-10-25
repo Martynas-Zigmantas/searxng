@@ -1,9 +1,12 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # pylint: disable=missing-module-docstring,missing-class-docstring,missing-function-docstring,protected-access
 
+import io
 import json
 import os
 import tempfile
+import time
+import urllib.error
 from urllib.parse import parse_qs, urlparse
 
 import searx.accounts
@@ -124,5 +127,132 @@ class AccountsTestCase(SearxTestCase):
 
     def test_sync_too_large(self):
         self._sign_in()
-        big = json.dumps({"sxng-home-history": "x" * (70 * 1024)})
+        big = json.dumps({"sxng-home-history": "x" * (300 * 1024)})
         self.assertEqual(self.app.put("/account/data", data=big, headers={"X-Alexandria": "1"}).status_code, 413)
+
+    # ---------------------------------------------------------------- preferences follow the account
+
+    def _cookies(self, resp):
+        return {h.split("=", 1)[0]: h.split("=", 1)[1].split(";", 1)[0] for h in resp.headers.getlist("Set-Cookie")}
+
+    def test_preferences_follow_the_account(self):
+        self._sign_in()
+        resp = self.app.post("/preferences", data={"safesearch": "2", "category_general": "1"})
+        self.assertEqual(resp.status_code, 302)
+        # another browser, same Epistle account: takes them on at its first page
+        other = searx.webapp.app.test_client()
+        self.app, mine = other, self.app
+        self._sign_in()
+        cookies = self._cookies(self.app.get("/"))
+        self.assertEqual(cookies.get("safesearch"), "2")
+        # once: the next page doesn't write them again
+        self.assertNotIn("safesearch", self._cookies(self.app.get("/")))
+        self.app = mine
+
+    def test_first_browser_with_preferences_brings_them(self):
+        self.app.set_cookie("safesearch", "1")
+        self._sign_in()
+        self.app.get("/")
+        with searx.accounts._db() as con:
+            row = con.execute("SELECT data FROM prefs WHERE sub = ?", ("m.z@koda.test",)).fetchone()
+        self.assertIsNotNone(row)
+
+    def test_reset_defaults_forgets_the_account_preferences(self):
+        self._sign_in()
+        self.app.post("/preferences", data={"safesearch": "2"})
+        self.app.get("/clear_cookies")
+        with searx.accounts._db() as con:
+            self.assertIsNone(con.execute("SELECT 1 FROM prefs").fetchone())
+
+    # ---------------------------------------------------------------- mail card
+
+    def _sign_in_with_inbox(self):
+        def swap(code, verifier):
+            self.swapped.append((code, verifier))
+            return {"email": "m.z@koda.test", "name": "M Z", "inbox_token": "tok-1", "inbox_expires": time.time() + 3600}
+
+        self.setattr4test(searx.accounts, "_swap", swap)
+        self._sign_in()
+
+    def _epistle_answers(self, answer):
+        calls = []
+
+        def urlopen(req, timeout=0):
+            calls.append(req)
+            if isinstance(answer, Exception):
+                raise answer
+            return io.BytesIO(json.dumps(answer).encode())
+
+        self.setattr4test(searx.accounts.urllib.request, "urlopen", urlopen)
+        searx.accounts._mail_cache.clear()
+        return calls
+
+    def test_mail_needs_account(self):
+        self.assertEqual(self.app.get("/account/mail").status_code, 401)
+
+    def test_mail_card(self):
+        self._sign_in_with_inbox()
+        letter = {"from": {"name": "Tomas", "email": "t@x.test"}, "subject": "Cabin", "encrypted": False,
+                  "date": "2026-10-24T07:08:53Z", "uid": 13}
+        calls = self._epistle_answers({"unseen": 4, "messages": [letter]})
+        data = self.app.get("/account/mail").json
+        self.assertEqual(calls[0].full_url, EPISTLE + "/v1/alexandria/inbox")
+        self.assertEqual(calls[0].get_header("Authorization"), "Bearer tok-1")
+        self.assertEqual(data["state"], "ok")
+        self.assertEqual(data["unseen"], 4)
+        self.assertEqual(data["messages"][0]["from"], "Tomas")
+        self.assertEqual(
+            data["messages"][0]["url"], EPISTLE + "/epistle/jesus-is-god/m.z@koda.test/Mail/view#!/Mail/0/INBOX/13"
+        )
+        # the token never goes to the browser
+        self.assertNotIn(b"tok-1", self.app.get("/account/mail").data)
+        self.assertNotIn(b"tok-1", self.app.get("/").data)
+
+    def test_mail_token_refused_is_dropped(self):
+        self._sign_in_with_inbox()
+        self._epistle_answers(urllib.error.HTTPError("u", 401, "no", {}, None))
+        self.assertEqual(self.app.get("/account/mail").json["state"], "unavailable")
+        with searx.accounts._db() as con:
+            self.assertIsNone(con.execute("SELECT 1 FROM inbox").fetchone())
+        # and the next page load signs in again for a new one
+        self.assertEqual(self.app.get("/", headers=NAVIGATE).status_code, 302)
+
+    def test_sign_out_drops_the_inbox_token(self):
+        self._sign_in_with_inbox()
+        self.app.get("/account/logout")
+        with searx.accounts._db() as con:
+            self.assertIsNone(con.execute("SELECT 1 FROM inbox").fetchone())
+
+    def test_history_page(self):
+        page = self.app.get("/history")
+        self.assertEqual(page.status_code, 200)
+        self.assertIn(b"history_app", page.data)
+        self.assertIn(b"Only on this device", page.data)
+        self._sign_in()
+        self.assertIn(b"Kept in your Epistle account (m.z@koda.test)", self.app.get("/history").data)
+
+
+class PhotoTestCase(SearxTestCase):
+    """The start page photo: a random one from the pool, never a URL from the request."""
+
+    def setUp(self):
+        super().setUp()
+        import searx.home_widgets as hw  # pylint: disable=import-outside-toplevel
+
+        self.hw = hw
+        self.app = searx.webapp.app.test_client()
+        pool = [
+            {"id": "Wolves_EN-GB1", "base": "/th?id=OHR.Wolves_EN-GB1", "title": "Wolves", "credit": "(c) a"},
+            {"id": "Clock_EN-GB2", "base": "/th?id=OHR.Clock_EN-GB2", "title": "Clock", "credit": "(c) b"},
+        ]
+        self.setattr4test(hw, "_photo_pool", lambda: pool)
+
+    def test_never_the_last_one(self):
+        for _ in range(10):
+            data = self.app.get("/widgets/photo?not=Wolves_EN-GB1").json
+            self.assertEqual(data["id"], "Clock_EN-GB2")
+        self.assertIn("/widgets/photo/image?id=Clock_EN-GB2", data["image"])
+
+    def test_only_pool_ids_are_fetched(self):
+        self.assertEqual(self.app.get("/widgets/photo/image?id=../../etc/passwd").status_code, 404)
+        self.assertEqual(self.app.get("/widgets/photo/image?id=Other_EN-GB9").status_code, 404)

@@ -10,15 +10,17 @@ Under the hood it is a fork of [SearXNG](https://github.com/searxng/searxng) (AG
 page full of widgets, and an app launcher for the rest of the self-hosted services. It is a sibling of
 [Epistle](https://webmail.kodatrade.co.uk): Google colours by day, Epistle's deep plum by night.
 
-<p align="center"><img src="docs/readme/screens.png" alt="Alexandria start page in light mode, results in dark mode, the phone layout, the app launcher and the preferences page" width="100%"></p>
+<p align="center"><img src="docs/readme/screens.png" alt="Alexandria start page on a photo of the day, results in dark mode, the phone layout, the app launcher and the preferences page" width="100%"></p>
 
 ## What's different from stock SearXNG
 
 | | |
 |---|---|
 | **Look** | Google layout and blue buttons / links, the logo in Epistle's colours: the name in a Tyrian purple → wax red → gold gradient (lighter on dark), Inter (bundled, no Google Fonts call). Every result, the knowledge panel and the suggestions sit on their own card. Dark mode puts the cards on Epistle's deep plum; phones in light mode get a plum wash that fades out. Category tabs use Epistle-style glyphs in Epistle's folder colours (guitar for Music, scroll for News, amphora for Files…); Preferences is Epistle's sliders. Phones keep the name on top and a pill search box with a dropdown. |
-| **Logo** | Three scrolls on a gold shelf: Epistle's Archive folder glyph, because Alexandria is Epistle's sister library (picked 2026-10-24 over the compass star, which read as an AI sparkle). Epistle purple + gold, no blue. Sources in [`brand/`](brand/). |
-| **Start page** | Greeting + clock, your own shortcut tiles, weather (follows your rough location from your IP until you pick a city), recent searches, quick category chips. A **Customize** button turns each one on or off. |
+| **Logo** | Three scrolls on a gold shelf: Epistle's Archive folder glyph, because Alexandria is Epistle's sister library (picked 2026-10-24 over the compass star, which read as an AI sparkle). In the page: the scrolls in gold on a plum tile, and the name in its purple → wax red → gold gradient, **the same in light mode, dark mode and on the photo** (2026-10-25; on dark it sits on a light plate). Sources in [`brand/`](brand/). |
+| **Start page** | Greeting + clock, your own shortcut tiles, weather (follows your rough location from your IP until you pick a city), recent searches, quick category chips, and (signed in) your **Inbox**: unread count + the newest 3 unread letters, each opening in Epistle. A **Customize** button turns each one on or off. |
+| **Photo of the day** | The start page always sits on a Bing photo of the day, a different one every time it opens (never the one you saw last): a pool of the last ~2 weeks of Bing's English markets plus every photo seen since (up to 60), fetched and cached on disk by this server (`/widgets/photo`), so the browser never talks to Bing. Credit bottom left (on phones under the cards). The page turns dark with glass cards on it; the name keeps its colours on a frosted plate. Pinned to the large viewport so Safari's toolbar never re-crops it. `client/simple/src/js/main/backdrop.ts`, `searx/home_widgets.py`. |
+| **Search history** | `/history`: every search (up to 400) by day with times, a filter box, × to forget one, *Save my searches* (pause), *Clear all*. Link from the Recent searches card and the account menu. `client/simple/src/js/main/history.ts`. |
 | **App launcher** | The 9-dot button top right: Mail (Epistle), Drive (Nextcloud), Bitwarden (vault.jack-sally.com), Docs (BookStack), Git (Forgejo), n8n, Maps, YouTube. Each tile wears the service's real logo (Simple Icons, vendored in `searx/templates/simple/elements/app_logos.html`). Edit the list in `searx/settings.yml` → `brand.custom.apps` (`logo:`, `badge:`, `icon:`, colours). |
 | **Alexandria account** | Your **Epistle** account: signed in to Epistle mail in this browser = signed in here, with no click. Avatar + account card top right (*Manage your Epistle account*, *Sign out*); shortcuts, recent searches, weather city and widget switches follow you to every device. See [Alexandria account](#alexandria-account). |
 | **Loading** | The compass needle (purple, gold north tip) swings round and settles while something loads: in the search button while the next page comes, in the weather card, and in place of SearXNG's spinner (infinite scroll, image viewer). `client/simple/src/js/util/loading.ts`. |
@@ -124,7 +126,9 @@ like an OAuth code flow with PKCE, without client secrets, and nothing to set up
 | epistle-api (epistle repo) | `server/internal/api/alexandria.go`: asks the webmail who the cookie belongs to, gives a 60 s one-time code to the allowlisted callback only, `POST /v1/alexandria/token` swaps it (+ PKCE verifier) for `{email, name}` |
 | Stack env (Alexandria) | `ALEXANDRIA_EPISTLE_URL=https://webmail.kodatrade.co.uk` (`off` = no accounts), `ALEXANDRIA_EPISTLE_API=http://host.docker.internal:28881` (epistle-api on node2). Both in `deploy/alexandria.portainer.yml`, nothing secret |
 | Session | Signed cookie, 30 days, re-checked against Epistle every 6 h |
-| Synced data | SQLite `alexandria-accounts.db` in the `alexandria-data` volume, one small JSON per mailbox |
+| Synced data | SQLite `alexandria-accounts.db` in the `alexandria-data` volume: one small JSON per mailbox (start page switches, search history, shortcuts, weather city; `/account/data`), the saved Preferences, and the inbox token |
+| Preferences | Saved while signed in = stored for the account (`prefs_after`); another browser of the account takes them on at its next page load (`prefs_before`, into its cookies). *Reset defaults* forgets them everywhere |
+| Mail card | At sign-in epistle-api also hands over an `inbox_token` (12 h, good for `GET /v1/alexandria/inbox` only: unread count + newest 3 unread, read-only, encrypted subjects never sent). It stays in the database, never in the browser; `/account/mail` asks with it (cached 60 s). The silent check signs in again before it runs out |
 
 **Sign out** on Alexandria signs out of Alexandria only and stops the automatic sign-in until you press *Sign in*
 again. Signing out of Epistle reaches Alexandria at its next check (within 6 h).

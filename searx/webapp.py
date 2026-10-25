@@ -1014,6 +1014,10 @@ app.add_url_rule('/favicon_proxy', methods=['GET'], endpoint="favicon_proxy", vi
 app.add_url_rule('/widgets/geocode', methods=['GET'], endpoint="widgets_geocode", view_func=home_widgets.geocode)
 app.add_url_rule('/widgets/weather', methods=['GET'], endpoint="widgets_weather", view_func=home_widgets.weather)
 app.add_url_rule('/widgets/locate', methods=['GET'], endpoint="widgets_locate", view_func=home_widgets.locate)
+app.add_url_rule('/widgets/photo', methods=['GET'], endpoint="widgets_photo", view_func=home_widgets.photo)
+app.add_url_rule(
+    '/widgets/photo/image', methods=['GET'], endpoint="widgets_photo_image", view_func=home_widgets.photo_image
+)
 accounts.register(app)
 
 
@@ -1262,10 +1266,17 @@ def favicon():
 
 @app.route('/clear_cookies')
 def clear_cookies():
+    accounts.forget_prefs()
     resp = make_response(redirect(url_for('index', _external=True)))
     for cookie_name in sxng_request.cookies:
         resp.delete_cookie(cookie_name)
     return resp
+
+
+@app.route('/history', methods=['GET'])
+def history():
+    """Alexandria: your search history (kept in the browser, and in the account when signed in)."""
+    return render('history.html')
 
 
 @app.route('/config')

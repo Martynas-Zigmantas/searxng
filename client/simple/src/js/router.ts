@@ -81,3 +81,12 @@ ready(
   },
   { on: [endpoint === Endpoints.preferences] }
 );
+
+ready(
+  () => {
+    void synced.finally(() => {
+      void import("./main/history.ts");
+    });
+  },
+  { on: [endpoint === Endpoints.history] }
+);
