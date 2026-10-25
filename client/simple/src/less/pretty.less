@@ -2054,6 +2054,219 @@ button.category_button.selected {
   }
 }
 
+// switches: a plain iOS-style track + knob instead of stock's floating ✕ / ✓ dot
+input.checkbox-onoff[type="checkbox"] {
+  flex-shrink: 0;
+  width: 2.75rem;
+  height: 1.6rem;
+  margin: 0;
+  border-radius: 999px;
+  vertical-align: middle;
+  transition: background 0.2s;
+
+  &::before {
+    content: "" !important;
+    top: 0.2rem;
+    left: 0.2rem !important;
+    width: 1.2rem;
+    height: 1.2rem;
+    background: #fff !important;
+    box-shadow: 0 1px 3px rgb(0 0 0 / 30%);
+    transition: transform 0.2s;
+  }
+
+  &:focus::after {
+    display: none;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--p-accent);
+    outline-offset: 2px;
+  }
+}
+
+input.checkbox-onoff[type="checkbox"],
+input.checkbox-onoff.reversed-checkbox[type="checkbox"]:checked {
+  background: rgb(120 120 128 / 32%);
+}
+
+// reversed-checkbox (engine "Allow") is on when the box is NOT checked
+input.checkbox-onoff:not(.reversed-checkbox)[type="checkbox"]:checked,
+input.checkbox-onoff.reversed-checkbox[type="checkbox"]:not(:checked) {
+  background: var(--p-accent);
+
+  &::before {
+    transform: translateX(1.15rem);
+  }
+}
+
+// Save / Reset defaults / Back: one row under the settings, Save the only filled button
+#main_preferences form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+
+  > .tabs,
+  > p.small_font {
+    flex: 1 0 100%;
+    min-width: 0;
+  }
+
+  > p.small_font {
+    margin: 1rem 0 0.5rem;
+    color: var(--p-text-3);
+    line-height: 1.5;
+  }
+
+  > .preferences_back {
+    float: none;
+    clear: none;
+    margin: 0;
+    padding: 0;
+    background: none;
+
+    a {
+      display: inline-block;
+      padding: 0.6rem 1.2rem;
+      border: 1px solid var(--p-border);
+      border-radius: 999px;
+      color: var(--p-text);
+      font: 500 0.9rem var(--p-font);
+      text-decoration: none;
+
+      &:hover {
+        background: var(--p-surface-2);
+      }
+    }
+  }
+}
+
+@media screen and (max-width: @phone) {
+  #main_preferences {
+    // body is a flex row: without these the engines table widened the whole page
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    padding: 1.25rem 1rem 2rem;
+
+    h1 {
+      margin: 0.25rem 0 1rem;
+      font-size: 1.75rem;
+    }
+
+    // tabs: compact chips that wrap, not six full-width bars
+    .tabs {
+      gap: 0.4rem;
+
+      & > label {
+        width: auto;
+        margin: 0;
+        padding: 0.5rem 0.9rem;
+      }
+
+      & > section {
+        // flex items default to min-content wide: the engines table stretched the whole page
+        box-sizing: border-box;
+        min-width: 0;
+        max-width: 100%;
+        margin-top: 0.6rem;
+        padding: 0.25rem 1rem;
+        border-radius: 16px;
+      }
+    }
+
+    // the Engines tab's category chips sit inside the card: no second card around them
+    .tabs .tabs {
+      padding-top: 0.75rem;
+
+      & > label {
+        padding: 0.4rem 0.8rem;
+        background: var(--p-bg);
+        font-size: 0.8rem;
+      }
+
+      & > section {
+        margin-top: 0.5rem;
+        padding: 0;
+        background: none;
+      }
+    }
+
+    // one setting = one row: name left, switch right (or the dropdown full width), note underneath
+    fieldset {
+      margin: 0;
+      padding: 0.9rem 0;
+
+      &::after {
+        content: "";
+        display: block;
+        clear: both;
+      }
+    }
+
+    legend {
+      float: left;
+      width: 100%;
+      padding: 0;
+      line-height: 1.6rem;
+    }
+
+    .value {
+      float: none;
+      clear: both;
+      width: 100%;
+      padding-top: 0.5rem;
+
+      select,
+      input[type="text"] {
+        box-sizing: border-box;
+        width: 100%;
+        margin: 0;
+      }
+    }
+
+    fieldset:has(> .value > .checkbox-onoff) {
+      legend {
+        width: calc(100% - 3.5rem);
+      }
+
+      .value {
+        float: right;
+        clear: none;
+        width: auto;
+        padding: 0;
+      }
+    }
+
+    .description {
+      float: none;
+      clear: both;
+      width: 100%;
+      padding-top: 0.4rem;
+      font-size: 0.85rem;
+      line-height: 1.45;
+    }
+
+    // wide tables (engines, special queries, cookies) scroll inside the card, the page stays put
+    table {
+      display: block;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      max-width: 100%;
+
+      th,
+      td {
+        padding: 0.7rem 0.45rem;
+      }
+    }
+
+    #toggle-all-engines-container {
+      margin: 0.5rem 0;
+    }
+  }
+}
+
 /// Loading: the compass needle (logo N2) swings round and settles ----------
 
 @keyframes p-needle {
