@@ -9,10 +9,13 @@ const ROOT = new URL('../../../', import.meta.url).pathname;
 const OUT = `${ROOT}docs/readme/`;
 const SHOTS = `${ROOT}docs/readme/src/shots/`;
 const font = fs.readFileSync(`${ROOT}client/simple/src/fonts/inter-latin-wght-normal.woff2`).toString('base64');
+const nameFont = fs.readFileSync(`${ROOT}client/simple/src/fonts/dm-serif-display-latin-400.woff2`).toString('base64');
 const CSS = `
 @font-face{font-family:Inter;font-weight:100 900;src:url(data:font/woff2;base64,${font}) format('woff2')}
+@font-face{font-family:Name;src:url(data:font/woff2;base64,${nameFont}) format('woff2')}
 *{box-sizing:border-box} body{margin:0;font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif}
 .serif{font-family:Inter,sans-serif;font-weight:600;letter-spacing:-0.04em}
+.name{font-family:Name,serif;font-weight:400;letter-spacing:-0.01em;background:linear-gradient(100deg,#fff1c7 0%,#f5c76a 45%,#e8707a 100%);-webkit-background-clip:text;background-clip:text;color:transparent;padding-bottom:.08em}
 `;
 // the logo as it is in the page: gold scrolls on a plum tile, whatever the background (fg kept for the callers)
 const markSvg = (_fg, w) => `<svg viewBox="0 0 100 100" width="${w}" height="${w}"><rect width="100" height="100" rx="22" fill="${C.plum}"/><g transform="translate(9 9) scale(.82)">${mark(C.gold, C.gold)}</g></svg>`;
@@ -23,7 +26,7 @@ const banner = `
 <div style="width:1600px;height:520px;background:radial-gradient(ellipse at 30% 40%, #6b1d52 0%, ${C.deep} 70%);display:flex;align-items:center;padding:0 110px;gap:90px;position:relative;overflow:hidden">
   <div style="position:absolute;left:150px;top:120px;width:260px;height:260px;border-radius:50%;background:radial-gradient(circle, rgba(201,162,74,.35), transparent 70%)"></div>
   <div style="display:flex;flex-direction:column;gap:26px;position:relative">
-    <div style="display:flex;align-items:center;gap:26px">${markSvg(C.white, 120)}<span class="serif" style="font-size:128px;color:${C.white};line-height:1">Alexandria</span></div>
+    <div style="display:flex;align-items:center"><span class="name" style="font-size:150px;line-height:1.05">alexandria</span></div>
     <div style="color:#e2d5dc;font-size:28px;max-width:760px;line-height:1.4">Every search engine at once, from your own server.<br><span style="color:${C.gold}">No ads, no tracking, no profile.</span></div>
   </div>
   <div style="flex:1;display:flex;flex-direction:column;gap:18px;position:relative">
@@ -145,8 +148,7 @@ const screens = `
 const cover = `
 <div style="width:1800px;height:1013px;background:radial-gradient(ellipse at 50% 38%, #6b1d52 0%, ${C.deep} 72%);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:40px">
   <div style="width:520px;height:520px;border-radius:50%;background:radial-gradient(circle, rgba(201,162,74,.28), transparent 68%);position:absolute;top:120px"></div>
-  <div style="position:relative">${markSvg(C.white, 260)}</div>
-  <span class="serif" style="position:relative;font-size:170px;color:${C.white};line-height:.9">Alexandria</span>
+  <span class="name" style="position:relative;font-size:200px;line-height:1.05">alexandria</span>
 </div>`;
 
 const pages = {

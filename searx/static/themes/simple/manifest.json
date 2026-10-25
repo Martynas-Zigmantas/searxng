@@ -22,6 +22,10 @@
       "_DK4yUVpy.min.js"
     ]
   },
+  "src/fonts/dm-serif-display-latin-400.woff2": {
+    "file": "sxng-dm-serif-display-latin-400.woff2",
+    "src": "src/fonts/dm-serif-display-latin-400.woff2"
+  },
   "src/fonts/inter-latin-wght-normal.woff2": {
     "file": "sxng-inter-latin-wght-normal.woff2",
     "src": "src/fonts/inter-latin-wght-normal.woff2"
@@ -42,6 +46,7 @@
       "src/js/main/home.ts",
       "src/js/main/autocomplete.ts",
       "src/js/main/results.ts",
+      "src/js/main/library.ts",
       "src/js/main/preferences.ts",
       "src/js/main/history.ts"
     ]
@@ -97,6 +102,12 @@
       "src/js/index.ts",
       "_DK4yUVpy.min.js"
     ]
+  },
+  "src/js/main/library.ts": {
+    "file": "chunk/CuJBmpyX.min.js",
+    "name": "library",
+    "src": "src/js/main/library.ts",
+    "isDynamicEntry": true
   },
   "src/js/main/preferences.ts": {
     "file": "chunk/ZLVGF1LA.min.js",
@@ -198,6 +209,7 @@
     "src": "src/less/style-ltr.less",
     "isEntry": true,
     "assets": [
+      "sxng-dm-serif-display-latin-400.woff2",
       "sxng-inter-latin-wght-normal.woff2"
     ]
   },
@@ -210,6 +222,7 @@
     "src": "src/less/style-rtl.less",
     "isEntry": true,
     "assets": [
+      "sxng-dm-serif-display-latin-400.woff2",
       "sxng-inter-latin-wght-normal.woff2"
     ]
   }

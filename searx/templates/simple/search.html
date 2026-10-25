@@ -1,7 +1,7 @@
 <form id="search" method="{{ method }}" action="{{ url_for('search') }}" role="search">
   <div id="search_header">
     <a id="search_logo" href="{{ url_for('index') }}" tabindex="0" title="{{ _('Display the front page') }}">
-      {% include 'simple/elements/brand_mark.html' %}<span class="search_logo_text">{{ instance_name }}</span>
+      <span class="search_logo_text">{{ instance_name }}</span>
     </a>
     <div id="search_view">
       <div class="search_box">

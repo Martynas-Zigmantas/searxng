@@ -7,6 +7,14 @@
  * overrides; delete the import to get stock SearXNG.
  */
 
+// the name: DM Serif Display, lowercase (picked 2026-10-25, "13"). Latin subset of Google Fonts' file, OFL
+@font-face {
+  font-family: "Alexandria Serif";
+  font-weight: 400;
+  font-display: swap;
+  src: url("../fonts/dm-serif-display-latin-400.woff2") format("woff2");
+}
+
 @font-face {
   font-family: "Alexandria Sans";
   font-weight: 100 900;
@@ -3286,13 +3294,146 @@ button.category_button:hover .cat-glyph {
   .pretty-dark-logo();
 }
 
-// on the photo the name keeps its own colours (plum -> wax red -> gold) on a frosted light plate, so it reads on any
-// picture (picked 2026-10-25 over a white glow)
-html.home-bg-on .index h1.home-wordmark {
-  padding: 0.1em 0.32em 0.12em 0.14em;
-  border-radius: 0.32em;
-  background: rgb(255 255 255 / 84%);
-  -webkit-backdrop-filter: blur(14px);
-  backdrop-filter: blur(14px);
-  box-shadow: 0 8px 30px rgb(0 0 0 / 25%);
+/// The name ---------------------------------------------------------------------
+
+// lowercase DM Serif everywhere, no icon beside it (the scrolls are the favicon only). The markup keeps "Alexandria".
+.index h1.home-wordmark span,
+#search_logo .search_logo_text,
+.page_with_header .logo-text > span {
+  font-family: "Alexandria Serif", georgia, serif;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  text-transform: lowercase;
+}
+
+.index h1.home-wordmark span {
+  // the descender of the gradient-clipped text needs room
+  padding: 0 0.04em 0.1em;
+  line-height: 1.1;
+}
+
+#search_logo .search_logo_text {
+  font-size: 1.6rem;
+}
+
+// on the photo: gold to rose, no backing, a soft shadow so it reads on any picture
+html.home-bg-on .index h1.home-wordmark span {
+  background-image: linear-gradient(
+    100deg,
+    #fff1c7 0%,
+    #f5c76a 45%,
+    #e8707a 100%
+  );
+  filter: drop-shadow(0 2px 3px rgb(0 0 0 / 55%))
+    drop-shadow(0 0 18px rgb(0 0 0 / 35%));
+}
+
+/// Results page background: library things (main/library.ts) -------------------
+
+.library-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: -1;
+  width: 100%;
+  height: 100vh;
+  height: 100lvh;
+  overflow: hidden;
+  pointer-events: none;
+
+  canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+}
+
+html.library-bg-on,
+html.library-bg-on body.results_endpoint {
+  background: transparent !important;
+}
+
+.lib-icon {
+  position: absolute;
+
+  svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+}
+
+.lib-shelves {
+  position: absolute;
+  top: 120px;
+}
+
+.lib-ladder {
+  transform-origin: 50% 100%;
+}
+
+.lib-bob {
+  animation: lib-bob 7s ease-in-out infinite alternate;
+
+  &.lib-slow {
+    animation-duration: 11s;
+  }
+}
+
+.lib-flicker svg {
+  animation: lib-flicker 2.6s ease-in-out infinite;
+}
+
+.lib-float {
+  animation: lib-float 60s linear infinite;
+}
+
+@keyframes lib-bob {
+  from {
+    transform: translateY(0) rotate(-4deg);
+  }
+
+  to {
+    transform: translateY(-14px) rotate(5deg);
+  }
+}
+
+@keyframes lib-flicker {
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  45% {
+    opacity: 0.75;
+  }
+
+  60% {
+    opacity: 0.95;
+  }
+}
+
+@keyframes lib-float {
+  0% {
+    transform: translateY(20vh) rotate(-8deg);
+    opacity: 0;
+  }
+
+  10%,
+  85% {
+    opacity: 1;
+  }
+
+  100% {
+    transform: translateY(-80vh) rotate(8deg);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lib-bob,
+  .lib-flicker svg,
+  .lib-float {
+    animation: none;
+  }
 }

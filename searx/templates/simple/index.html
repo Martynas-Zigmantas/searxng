@@ -4,7 +4,7 @@
 <div class="index">
     <div class="home-hero">
         <p id="home_greeting" class="home-greeting hide_if_nojs" aria-live="polite"></p>
-        <div class="title"><h1 class="home-wordmark">{% include 'simple/elements/brand_mark.html' %}<span>{{ instance_name }}</span></h1></div>
+        <div class="title"><h1 class="home-wordmark"><span>{{ instance_name }}</span></h1></div>
         {% include 'simple/simple_search.html' %}
         <div class="home-chips hide_if_nojs" data-search-url="{{ url_for('search') }}">
             <button type="button" class="cat-images" data-cat="images">{{ category_icon('images') }}<span>{{ _('images') }}</span></button>
