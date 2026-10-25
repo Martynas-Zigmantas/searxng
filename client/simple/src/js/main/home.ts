@@ -8,7 +8,7 @@
  */
 
 import { listen } from "../toolkit.ts";
-import { type HomePrefs, history, homePrefs, saveHomePrefs } from "../util/homeStore.ts";
+import { history, homePrefs } from "../util/homeStore.ts";
 import { needle, startLoading } from "../util/loading.ts";
 import { startBackdrop } from "./backdrop.ts";
 
@@ -44,7 +44,8 @@ const ICON = {
     '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
   clock:
     '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 7v5l3 2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>',
-  mail: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5.5" width="17" height="13" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="m4.5 7 7.5 6 7.5-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  // Epistle's Inbox folder glyph (the scroll, epistle app/src/ui/folderIconData.ts), in Epistle's Inbox teal
+  mail: '<svg viewBox="0 0 24 24" aria-hidden="true" class="home-inbox-glyph" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3" width="17" height="3.2" rx="1.6"/><rect x="3.5" y="17.8" width="17" height="3.2" rx="1.6"/><path d="M6 6.2v11.6M18 6.2v11.6M9 10h6M9 13.5h4.5"/></svg>',
   lock: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10.5" width="14" height="9.5" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>',
   pin: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="9.5" r="2.5" fill="currentColor"/></svg>'
 };
@@ -101,10 +102,6 @@ const greeting = document.getElementById("home_greeting");
 
 const renderGreeting = (): void => {
   if (!greeting) return;
-  if (!homePrefs.clock) {
-    greeting.hidden = true;
-    return;
-  }
   greeting.hidden = false;
   const now = new Date();
   const hour = now.getHours();
@@ -381,7 +378,7 @@ const renderRecent = (card: HTMLElement): void => {
   card.innerHTML = `<h3>${ICON.clock}Recent searches<a class="home-link-btn" href="${esc(all)}">See all</a></h3>`;
 
   if (!homePrefs.remember) {
-    card.append(el('<p class="home-muted">Search history is paused. Turn it back on in Customize.</p>'));
+    card.append(el(`<p class="home-muted">Search history is paused. Turn it back on on the <a href="${esc(all)}">history page</a>.</p>`));
     return;
   }
   if (items.length === 0) {
@@ -487,87 +484,33 @@ document.addEventListener("visibilitychange", () => {
   if (document.visibilityState === "visible" && card) void renderMail(card);
 });
 
-/* --------------------------------------------------------------- customize */
-
-type Toggle = { [K in keyof HomePrefs]: HomePrefs[K] extends boolean ? K : never }[keyof HomePrefs];
-
-const TOGGLES: [Toggle, string][] = [
-  ["clock", "Greeting & clock"],
-  ["shortcuts", "Shortcuts"],
-  ...(signedIn ? ([["mail", "Mail"]] as [Toggle, string][]) : []),
-  ["weather", "Weather"],
-  ["recent", "Recent searches"],
-  ["remember", "Save my searches"],
-  ["fahrenheit", "Use °F"]
-];
-
-const renderCustomize = (): HTMLElement => {
-  const wrap = el(`
-    <div class="home-customize">
-      <button type="button" class="home-customize-btn" aria-expanded="false">${ICON.edit}<span>Customize</span></button>
-      <div class="home-card home-customize-panel" hidden>
-        <h3>Customize this page</h3>
-        ${TOGGLES.map(
-          ([key, label]) =>
-            `<label class="home-toggle"><input type="checkbox" data-key="${key}" ${homePrefs[key] ? "checked" : ""}><span>${label}</span></label>`
-        ).join("")}
-        <button type="button" class="home-link-btn" data-reset>Reset shortcuts</button>
-      </div>
-    </div>`);
-  const button = wrap.querySelector(".home-customize-btn") as HTMLButtonElement;
-  const panel = wrap.querySelector(".home-customize-panel") as HTMLElement;
-
-  listen("click", button, () => {
-    panel.hidden = !panel.hidden;
-    button.setAttribute("aria-expanded", String(!panel.hidden));
-  });
-  for (const input of panel.querySelectorAll<HTMLInputElement>("input[data-key]")) {
-    listen("change", input, () => {
-      homePrefs[input.dataset.key as Toggle] = input.checked;
-      saveHomePrefs();
-      render(true);
-    });
-  }
-  listen("click", panel.querySelector("[data-reset]") as HTMLElement, () => {
-    localStorage.removeItem(SHORTCUTS_KEY);
-    window.dispatchEvent(new Event("alexandria:store"));
-    render(true);
-  });
-  return wrap;
-};
-
 /* ------------------------------------------------------------------ layout */
 
-const render = (keepPanelOpen = false): void => {
+// the same page for everyone: no Customize (Martynas, 2026-10-25). Old saved widget switches are ignored.
+const render = (): void => {
   if (!root) return;
   renderGreeting();
   root.innerHTML = "";
 
-  if (homePrefs.shortcuts) root.append(renderShortcuts());
+  root.append(renderShortcuts());
 
   const cards = el('<div class="home-cards"></div>');
-  if (signedIn && homePrefs.mail) {
+  if (signedIn) {
     const card = el('<article class="home-card home-mail"></article>');
     watchMail(card);
     cards.append(card);
   }
-  if (homePrefs.weather) {
+  {
     const card = el('<article class="home-card home-weather"></article>');
     void renderWeather(card);
     cards.append(card);
   }
-  if (homePrefs.recent) {
+  {
     const card = el('<article class="home-card"></article>');
     renderRecent(card);
     cards.append(card);
   }
-  if (cards.childElementCount) root.append(cards);
-
-  const customize = renderCustomize();
-  if (keepPanelOpen) {
-    (customize.querySelector(".home-customize-panel") as HTMLElement).hidden = false;
-  }
-  root.append(customize);
+  root.append(cards);
 };
 
 startBackdrop();

@@ -1368,70 +1368,9 @@ footer {
   gap: 0.5rem;
 }
 
-.home-customize {
-  position: fixed;
-  bottom: calc(1.25rem + env(safe-area-inset-bottom));
-  .ltr-right(1.25rem);
-  z-index: 20;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 0.6rem;
-}
-
-.home-customize-btn {
-  order: 2;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.45rem;
-  padding: 0.6rem 1rem;
-  border: 1px solid var(--p-border);
-  border-radius: 999px;
-  background: var(--p-surface);
+a.home-link-btn,
+a.home-link-btn:visited {
   color: var(--p-accent);
-  font: 500 0.85rem var(--p-font);
-  box-shadow: var(--p-shadow-1);
-  cursor: pointer;
-
-  svg {
-    width: 1rem;
-    height: 1rem;
-  }
-
-  &:hover {
-    box-shadow: var(--p-shadow-2);
-  }
-}
-
-.home-customize-panel {
-  order: 1;
-  width: 16rem;
-  background: var(--p-surface);
-  box-shadow: var(--p-shadow-2);
-  animation: p-pop 0.18s ease-out;
-  transform-origin: bottom right;
-
-  &[hidden] {
-    display: none;
-  }
-}
-
-.home-toggle {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  padding: 0.4rem 0;
-  color: var(--p-text);
-  cursor: pointer;
-
-  input {
-    width: 1rem;
-    height: 1rem;
-    accent-color: var(--p-accent);
-  }
-}
-
-a.home-link-btn {
   text-decoration: none;
 }
 
@@ -1444,6 +1383,11 @@ a.home-link-btn {
 }
 
 /// Start page: mail card ------------------------------------------------------
+
+// Epistle's Inbox colour (#2f7d6d), a touch lighter so it reads on the dark glass card
+.home-card h3 svg.home-inbox-glyph {
+  color: #4fae99;
+}
 
 .home-mail-count {
   padding: 0.1rem 0.5rem;
@@ -1675,8 +1619,7 @@ html.home-bg-dark {
     text-shadow: 0 1px 8px rgb(0 0 0 / 45%);
   }
 
-  .home-card,
-  .home-customize-panel {
+  .home-card {
     border: 1px solid rgb(255 255 255 / 14%);
     background: rgb(22 10 20 / 55%);
     -webkit-backdrop-filter: blur(18px) saturate(140%);
@@ -1684,8 +1627,7 @@ html.home-bg-dark {
     box-shadow: 0 8px 30px rgb(0 0 0 / 30%);
   }
 
-  .home-chips button,
-  .home-customize-btn {
+  .home-chips button {
     border-color: rgb(255 255 255 / 18%);
     background: rgb(20 8 18 / 45%);
     -webkit-backdrop-filter: blur(12px);
@@ -1717,8 +1659,7 @@ html.home-bg-dark {
 
 // a light scene: the cards turn frosted white
 html.home-bg-on:not(.home-bg-dark) {
-  .home-card,
-  .home-customize-panel {
+  .home-card {
     border: 1px solid rgb(255 255 255 / 70%);
     background: rgb(255 255 255 / 62%);
     -webkit-backdrop-filter: blur(18px) saturate(150%);
@@ -1985,9 +1926,9 @@ html.home-bg-on:not(.home-bg-dark) {
     }
   }
 
-  // room under the footer for the floating Customize button (and the phone's home bar)
+  // room under the footer for the phone's home bar
   body.index_endpoint footer {
-    padding-bottom: calc(5.5rem + env(safe-area-inset-bottom));
+    padding-bottom: calc(1.5rem + env(safe-area-inset-bottom));
   }
 }
 
@@ -3260,11 +3201,6 @@ button.category_button:hover .cat-glyph {
         box-shadow: 0 6px 10px rgb(32 33 36 / 22%);
       }
     }
-  }
-
-  .home-customize {
-    bottom: 0.75rem;
-    .ltr-right(0.75rem);
   }
 
   .home-shortcut {
