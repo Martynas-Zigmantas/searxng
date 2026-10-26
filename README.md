@@ -2,7 +2,7 @@
 
 # Alexandria
 
-**Alexandria** is Martynas's own private search engine, named after the ancient library that tried to hold everything ever written. It will run at **https://search.jack-sally.com**.
+**Alexandria** is Martynas's own private search engine, named after the ancient library that tried to hold everything ever written. It will run at **https://alexandria.epistle.email** (the old name, search.jack-sally.com, redirects there).
 It asks Google, Brave, DuckDuckGo, Wikipedia and 70+ other engines at once, merges the answers into one clean
 list, and none of them ever sees who searched. No ads, no tracking, no profile.
 
@@ -38,7 +38,7 @@ page full of widgets, and an app launcher for the rest of the self-hosted servic
 **Make it Brave's default search engine**
 
 1. Open `brave://settings/searchEngines` → **Site search** → **Add**.
-2. Name `Alexandria`, shortcut `a`, URL `https://search.jack-sally.com/search?q=%s` → **Add**.
+2. Name `Alexandria`, shortcut `a`, URL `https://alexandria.epistle.email/search?q=%s` → **Add**.
 3. On the new row, **⋮** → **Make default**. Address-bar suggestions come along automatically.
 
 Firefox / Chrome: visit the site once, then pick *Alexandria* in the browser's search settings (it announces itself
@@ -101,7 +101,7 @@ Then Portainer → Stacks → **alexandria** → *Pull and redeploy*. It is a **
 `deploy/alexandria.portainer.yml`); the image is local (`pull_policy: never`), so always build first. No environment
 variables: the container writes its own `settings.yml` (random `secret_key`, `use_default_settings: true`) into the
 `alexandria-config` volume on first start; overrides are optional (`deploy/settings.example.yml`).
-The reverse proxy already maps `search.jack-sally.com` → `192.168.178.27:48777` (not hosted yet, 2026-10-24: the
+The reverse proxy maps `alexandria.epistle.email` → `192.168.178.27:48777` (cert `/etc/letsencrypt/live/epistle-domains/`, Cloudflare DNS record grey-cloud; `search.jack-sally.com` 301s there) (not hosted yet, 2026-10-24: the
 stack is ready, the first deploy is still to do; see BookStack → Self Hosting → Alexandria → *deploy + update*).
 
 ## Re-render the logo and the README art

@@ -63,7 +63,7 @@ const howSearch = frame(
   `<div style="display:flex;align-items:center;gap:6px">
     ${box('Your browser', 'Brave / phone. Keeps your shortcuts, recent searches and city in <b>localStorage</b>, nowhere else.', { w: 260 })}
     ${arrow('https', 110)}
-    ${box('Reverse proxy', 'search.jack-sally.com<br>TLS, Go proxy', { w: 210 })}
+    ${box('Reverse proxy', 'alexandria.epistle.email<br>TLS, Go proxy', { w: 250 })}
     ${arrow('', 80)}
     ${box('Alexandria', 'node2 · :48777<br>Strips your IP + cookies, asks every engine at once, merges + ranks', { fill: C.plum, fg: C.white, border: C.plum, w: 290 })}
     <div style="display:flex;flex-direction:column;gap:16px;margin-left:6px">
