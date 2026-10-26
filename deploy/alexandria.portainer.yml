@@ -17,7 +17,7 @@ services:
       - SEARXNG_VALKEY_URL=valkey://alexandria-valkey:6379/0
       # The Alexandria account = the Epistle account (searx/accounts.py): browsers bounce through the webmail,
       # and the one-time code is swapped with epistle-api on this server (its published port 28881).
-      - ALEXANDRIA_EPISTLE_URL=https://webmail.kodatrade.co.uk
+      - ALEXANDRIA_EPISTLE_URL=https://epistle.email
       - ALEXANDRIA_EPISTLE_API=http://host.docker.internal:28881
     extra_hosts: [ "host.docker.internal:host-gateway" ]
     volumes:

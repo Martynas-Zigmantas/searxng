@@ -8,7 +8,7 @@ list, and none of them ever sees who searched. No ads, no tracking, no profile.
 
 Under the hood it is a fork of [SearXNG](https://github.com/searxng/searxng) (AGPL-3.0) with its own look, a start
 page full of widgets, and an app launcher for the rest of the self-hosted services. It is a sibling of
-[Epistle](https://webmail.kodatrade.co.uk): Google colours by day, Epistle's deep plum by night.
+[Epistle](https://www.epistle.email): Google colours by day, Epistle's deep plum by night.
 
 <p align="center"><img src="docs/readme/screens.png" alt="Alexandria start page on a photo of the day, results in dark mode, the phone layout, the app launcher and the preferences page" width="100%"></p>
 
@@ -125,7 +125,7 @@ like an OAuth code flow with PKCE, without client secrets, and nothing to set up
 | Alexandria | `searx/accounts.py`. A browser page load of `/`, `/search` or `/preferences` (`Sec-Fetch-Mode: navigate`) hops to `<ALEXANDRIA_EPISTLE_URL>/epistle/alexandria?prompt=none&…` when it's time: guests every 12 h, accounts every 6 h. **Sign in** = the same without `prompt=none` |
 | Epistle webmail (sogo-client) | nginx hands `/epistle/alexandria` to epistle-api (its sign-in cookie only exists on `/epistle/` paths); the sign-in page goes back there afterwards (`?next=`) |
 | epistle-api (epistle repo) | `server/internal/api/alexandria.go`: asks the webmail who the cookie belongs to, gives a 60 s one-time code to the allowlisted callback only, `POST /v1/alexandria/token` swaps it (+ PKCE verifier) for `{email, name}` |
-| Stack env (Alexandria) | `ALEXANDRIA_EPISTLE_URL=https://webmail.kodatrade.co.uk` (`off` = no accounts), `ALEXANDRIA_EPISTLE_API=http://host.docker.internal:28881` (epistle-api on node2). Both in `deploy/alexandria.portainer.yml`, nothing secret |
+| Stack env (Alexandria) | `ALEXANDRIA_EPISTLE_URL=https://epistle.email` (`off` = no accounts), `ALEXANDRIA_EPISTLE_API=http://host.docker.internal:28881` (epistle-api on node2). Both in `deploy/alexandria.portainer.yml`, nothing secret |
 | Session | Signed cookie, 30 days, re-checked against Epistle every 6 h |
 | Synced data | SQLite `alexandria-accounts.db` in the `alexandria-data` volume: one small JSON per mailbox (start page switches, search history, shortcuts, weather city; `/account/data`), the saved Preferences, and the inbox token |
 | Preferences | Saved while signed in = stored for the account (`prefs_after`); another browser of the account takes them on at its next page load (`prefs_before`, into its cookies). *Reset defaults* forgets them everywhere |

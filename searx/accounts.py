@@ -8,7 +8,7 @@ name).  The Epistle side is ``server/internal/api/alexandria.go`` in the epistle
 repo; the webmail's nginx hands ``/epistle/alexandria`` to it.
 
 - ``ALEXANDRIA_EPISTLE_URL``  the webmail as browsers open it, default
-  ``https://webmail.kodatrade.co.uk``; ``off`` = no accounts at all.
+  ``https://epistle.email``; ``off`` = no accounts at all.
 - ``ALEXANDRIA_EPISTLE_API``  where this server swaps the code, default the same
   host (``<url>/v1/alexandria/token``).
 
@@ -60,7 +60,7 @@ from searx import get_setting, logger
 
 log = logger.getChild("accounts")
 
-DEFAULT_EPISTLE = "https://webmail.kodatrade.co.uk"
+DEFAULT_EPISTLE = "https://epistle.email"
 SYNC_KEYS = ("sxng-home-prefs", "sxng-home-history", "sxng-history", "sxng-home-shortcuts", "sxng-home-place")
 SYNC_MAX_BYTES = 256 * 1024
 MAIL_TTL = 60  # seconds a mail card answer is reused
