@@ -139,7 +139,7 @@ const screens = `
   </div>
   ${shot('home-dark-phone.png', 360, 'Phone')}
   <div style="display:flex;flex-direction:column;gap:30px">
-    ${shot('launcher.png', 420, 'App launcher: Mail (Epistle), Drive, Bitwarden…')}
+    ${shot('account.png', 420, 'Signed in: the Mail pill opens your Epistle Inbox')}
     ${shot('prefs.png', 420, 'Preferences')}
   </div>
 </div>`;

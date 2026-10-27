@@ -463,7 +463,13 @@ def register(app: flask.Flask) -> None:
     def _account_context():
         account = current()
         url = epistle_url()
-        manage = ""
+        manage = mailbox = ""  # mailbox = the signed-in Inbox, for the Mail pill
         if url and account:
-            manage = url + "/epistle/jesus-is-god/" + account["email"] + "/Preferences"
-        return {"accounts_enabled": bool(url), "account": account, "account_manage_url": manage}
+            manage = _mailbox_url(account["email"]) + "/Preferences"
+            mailbox = _mailbox_url(account["email"]) + "/Mail/view#!/Mail/0/INBOX"
+        return {
+            "accounts_enabled": bool(url),
+            "account": account,
+            "account_manage_url": manage,
+            "account_mail_url": mailbox,
+        }

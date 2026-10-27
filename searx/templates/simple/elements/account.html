@@ -6,6 +6,11 @@
 </span>
 {%- endmacro -%}
 {%- if account -%}
+{#- straight into the signed-in mailbox (the app launcher is gone, 2026-10-27) -#}
+<a class="account-mail" href="{{ account_mail_url }}" rel="noreferrer" title="{{ _('Epistle Mail') }}&#10;{{ account.email }}">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M3.1 12C7.2 5 15.1 5 20.9 15.6"/><path d="M3.1 12C7.2 19 15.1 19 20.9 8.4"/></svg>
+  <span>{{ _('Mail') }}</span>
+</a>
 <div class="account-menu" data-sync-url="{{ url_for('account_data') }}">
   <button type="button" class="account-btn" aria-haspopup="true" aria-expanded="false" aria-controls="account_panel" title="{{ _('Epistle account') }}&#10;{{ account.name }}&#10;{{ account.email }}">
     {{- avatar(account, 'account-avatar') -}}

@@ -459,6 +459,57 @@ footer {
   }
 }
 
+// Epistle Mail pill next to the avatar: Epistle's plum, its two-stroke mark
+#links_on_top a.account-mail {
+  display: inline-flex;
+  gap: 0.4rem;
+  align-items: center;
+  margin-left: 0.4rem;
+  padding: 0.45rem 1rem 0.45rem 0.8rem;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #6b1d52, #2a0820);
+  color: #fff;
+  font-weight: 600;
+  text-decoration: none;
+  transition: box-shadow 0.15s;
+
+  svg {
+    width: 1.1rem;
+    height: 1.1rem;
+    margin: 0;
+  }
+
+  // stock colours every child of a header link ("#links_on_top a:link *")
+  span,
+  svg,
+  path {
+    color: #fff;
+  }
+
+  // the word stays on phones too (stock hides every span in #links_on_top there, see below)
+  span {
+    display: inline;
+  }
+
+  &:hover {
+    box-shadow: var(--p-shadow-1);
+  }
+}
+
+// phone results: the logo shares the top row, so the pill shrinks to a round icon (the avatar's size)
+@media screen and (max-width: 30em) {
+  .results_endpoint #links_on_top a.account-mail {
+    justify-content: center;
+    width: 2.3rem;
+    height: 2.3rem;
+    padding: 0;
+
+    span {
+      display: none;
+    }
+  }
+}
+
 .account-menu {
   position: relative;
   margin-left: 0.25rem;

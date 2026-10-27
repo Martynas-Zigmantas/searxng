@@ -7,10 +7,10 @@ It asks Google, Brave, DuckDuckGo, Wikipedia and 70+ other engines at once, merg
 list, and none of them ever sees who searched. No ads, no tracking, no profile.
 
 Under the hood it is a fork of [SearXNG](https://github.com/searxng/searxng) (AGPL-3.0) with its own look, a start
-page full of widgets, and an app launcher for the rest of the self-hosted services. It is a sibling of
+page full of widgets, and a Mail pill that opens your Epistle Inbox. It is a sibling of
 [Epistle](https://www.epistle.email): Google colours by day, Epistle's deep plum by night.
 
-<p align="center"><img src="docs/readme/screens.png" alt="Alexandria start page on a photo of the day, results in dark mode, the phone layout, the app launcher and the preferences page" width="100%"></p>
+<p align="center"><img src="docs/readme/screens.png" alt="Alexandria start page on a photo of the day, results in dark mode, the phone layout, the signed-in account menu with the Mail pill, and the preferences page" width="100%"></p>
 
 ## What's different from stock SearXNG
 
@@ -19,10 +19,10 @@ page full of widgets, and an app launcher for the rest of the self-hosted servic
 | **Look** | Google layout and blue buttons / links, the name in Epistle's colours (see Logo), Inter for everything else (bundled, no Google Fonts call). Every result, the knowledge panel and the suggestions sit on their own card. Dark mode puts the cards on Epistle's deep plum; phones in light mode get a plum wash that fades out. Category tabs use Epistle-style glyphs in Epistle's folder colours (guitar for Music, scroll for News, amphora for Files…); Preferences is Epistle's sliders. Phones keep the name on top and a pill search box with a dropdown. |
 | **Logo** | The name alone, lowercase **alexandria** in DM Serif Display (bundled, OFL), no icon beside it (picked 2026-10-25). On the start page photo it's a gold → rose gradient with a soft shadow; on results, preferences and history it's the plum → wax red → gold gradient (on a light plate in dark mode). The three scrolls on a gold shelf (Epistle's Archive glyph) are the favicon / app icon only. Sources in [`brand/`](brand/). |
 | **Results backgrounds** | Library things behind the results, a different one of five at every search / refresh: a quiet constellation of line icons (books, ladders, quills, shelves, scrolls, columns, lamps…) joined by threads, the same in colour, endpapers (a slowly panning icon pattern), bookshelf walls with a gold ladder, and coloured icons floating up. No colour wash behind any of them: the page stays plain, the icons carry the colour. Light and dark versions, a still frame for reduced motion. `client/simple/src/js/main/library.ts`, icons in `util/libraryIcons.ts`. |
-| **Start page** | Greeting + clock, your own shortcut tiles, weather (follows your rough location from your IP until you pick a city), recent searches, quick category chips, and (signed in) your **Inbox**: unread count + the newest 3 unread letters, each opening in Epistle. A **Customize** button turns each one on or off. |
+| **Start page** | Greeting + clock, your own shortcut tiles (each with its site's icon, via `/widgets/favicon`), weather (follows your rough location from your IP until you pick a city), recent searches, quick category chips, and (signed in) your **Inbox**: unread count + the newest 3 unread letters, each opening in Epistle. A **Customize** button turns each one on or off. |
 | **Photo of the day** | The start page always sits on a Bing photo of the day, a different one every time it opens (never the one you saw last): a pool of the last ~2 weeks of Bing's English markets plus every photo seen since (up to 60), fetched and cached on disk by this server (`/widgets/photo`), so the browser never talks to Bing. Credit bottom left (on phones under the cards). The page turns dark with glass cards on it; the name keeps its colours on a frosted plate. Pinned to the large viewport so Safari's toolbar never re-crops it. `client/simple/src/js/main/backdrop.ts`, `searx/home_widgets.py`. |
 | **Search history** | `/history`: every search (up to 400) by day with times, a filter box, × to forget one, *Save my searches* (pause), *Clear all*. Link from the Recent searches card and the account menu. `client/simple/src/js/main/history.ts`. |
-| **App launcher** | The 9-dot button top right: Mail (Epistle), Drive (Nextcloud), Bitwarden (vault.jack-sally.com), Docs (BookStack), Git (Forgejo), n8n, Maps, YouTube. Each tile wears the service's real logo (Simple Icons, vendored in `searx/templates/simple/elements/app_logos.html`). Edit the list in `searx/settings.yml` → `brand.custom.apps` (`logo:`, `badge:`, `icon:`, colours). |
+| **Mail pill** | Signed in, a plum **Mail** pill with Epistle's mark sits next to the avatar and opens your Epistle Inbox (`elements/account.html`, `account_mail_url` in `searx/accounts.py`); on phone results it's a round icon. The old 9-dot app launcher is off since 2026-10-27 (other sites are start page shortcuts now): `brand.custom.apps` in `searx/settings.yml` is `[]`; put tiles back there to bring it back (`elements/apps.html`, logos in `elements/app_logos.html`). |
 | **Alexandria account** | Your **Epistle** account: signed in to Epistle mail in this browser = signed in here, with no click. Avatar + account card top right (*Manage your Epistle account*, *Sign out*); shortcuts, recent searches, weather city and widget switches follow you to every device. See [Alexandria account](#alexandria-account). |
 | **Loading** | The compass needle (purple, gold north tip) swings round and settles while something loads: in the search button while the next page comes, in the weather card, and in place of SearXNG's spinner (infinite scroll, image viewer). `client/simple/src/js/util/loading.ts`. |
 | **Less clutter** | No About link, no language / time / SafeSearch row on results (the defaults come from Preferences). |
@@ -56,12 +56,12 @@ stored in a cookie for this browser. To copy the same setup to your phone, use t
 | Path | What |
 |---|---|
 | `client/simple/src/less/pretty.less` | **The Alexandria skin.** All the styling, loaded last over upstream's theme. |
-| `client/simple/src/js/main/home.ts` | Start page widgets. `extras.ts`: launcher, `/` hotkey, copy link, history. `util/homeStore.ts`: localStorage. |
+| `client/simple/src/js/main/home.ts` | Start page widgets. `extras.ts`: launcher + account menu, `/` hotkey, copy link, history. `util/homeStore.ts`: localStorage. |
 | `client/simple/src/fonts/` | Inter, variable (OFL). |
-| `searx/templates/simple/` | `index.html` (start page), `elements/apps.html` (launcher), `elements/category_icons.html` (tab glyphs), `elements/sliders_icon.html` (Preferences), `elements/brand_mark.html` (generated logo). |
+| `searx/templates/simple/` | `index.html` (start page), `elements/apps.html` (launcher, off), `elements/account.html` (avatar, account menu, Mail pill), `elements/category_icons.html` (tab glyphs), `elements/sliders_icon.html` (Preferences), `elements/brand_mark.html` (generated logo). |
 | `searx/accounts.py` | The Alexandria account (= Epistle account): `/account/login`, `/account/callback`, `/account/logout`, `/account/data` (sync), the silent check. Template `elements/account.html`, sync `client/simple/src/js/util/accountSync.ts`. |
 | `searx/home_widgets.py` | `/widgets/geocode`, `/widgets/weather`, `/widgets/locate` (IP → rough location): the server side of the weather widget. |
-| `searx/settings.yml` | Defaults baked into the image: name *Alexandria*, PWA colours, the app launcher list. |
+| `searx/settings.yml` | Defaults baked into the image: name *Alexandria*, PWA colours, the app launcher list (empty = no launcher). |
 | `searx/static/themes/simple/` | **Built** theme (committed, like upstream). Never edit by hand, run the build. |
 | `brand/` | Logo: `src/mark.mjs` (the drawing; `S1` three scrolls is the logo, `N2` needle = the loading spinner, `N1` the old star), `src/scrolls.mjs` (the Epistle glyph), `src/logo.mjs` (renders `logo/*` + the theme's favicon / app icons). |
 | `deploy/` | `build-image.sh`, `alexandria.portainer.yml`, `settings.example.yml` for node2. |
