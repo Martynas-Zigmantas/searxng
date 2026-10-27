@@ -152,5 +152,6 @@ side and rebuild.
 
 ## Licence
 
-AGPL-3.0-or-later, like SearXNG. The source is at https://git.jack-sally.com/Martynas-Cloud/searxng; the page
-footer's "Source code" link goes to upstream SearXNG (https://github.com/searxng/searxng). Upstream's own README is kept as [`README.rst`](README.rst).
+AGPL-3.0-or-later, like SearXNG. The source is at https://git.jack-sally.com/Martynas-Cloud/searxng (sign-in only),
+push-mirrored to the public https://github.com/Martynas-Zigmantas/searxng, which every page footer's "Source code"
+link points to. Upstream's own README is kept as [`README.rst`](README.rst).

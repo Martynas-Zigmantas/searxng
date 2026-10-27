@@ -17,7 +17,7 @@ cat > searx/version_frozen.py <<PY
 VERSION_STRING = "$VERSION"
 VERSION_TAG = "$VERSION"
 DOCKER_TAG = "${VERSION/+/-}"
-GIT_URL = "https://github.com/searxng/searxng"  # footer "Source code" = upstream SearXNG (Martynas, 2026-10-27)
+GIT_URL = "https://github.com/Martynas-Zigmantas/searxng"  # footer "Source code" = the public GitHub mirror of this repo
 GIT_BRANCH = "master"
 PY
 
