@@ -9,6 +9,8 @@ instance asks Open-Meteo (no API key, no account).
 - ``/widgets/locate``  ->  the rough location (city) of the visitor's IP
 - ``/widgets/photo?not=<id>``  ->  the start page background: a random recent Bing photo of
   the day (title, credit, ``/widgets/photo/image?id=<id>&s=wide|tall``, fetched + cached here)
+- ``/widgets/favicon?host=<domain>``  ->  a shortcut tile's site icon, through the same
+  favicon resolver + cache as the result list (404 when the site has none: the tile keeps its letter)
 
 ``/widgets/locate`` is the one exception to "only what the user typed": the
 server asks ipwho.is (fallback ip-api.com) where the visitor's IP address is,
@@ -36,6 +38,7 @@ LOCATE_TTL = 6 * 3600
 _locate_cache: dict[str, tuple[float, dict]] = {}
 FORECAST_URL = "https://api.open-meteo.com/v1/forecast"
 SAFE_ID = re.compile(r"^[A-Za-z0-9_-]{3,120}$")
+SAFE_HOST = re.compile(r"^(?=.{1,253}$)([a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$")
 
 
 def _float_arg(name: str, low: float, high: float) -> float | None:
@@ -345,3 +348,33 @@ def _prune_photos() -> None:
                 os.remove(os.path.join(folder, name))
             except OSError:
                 pass
+
+
+def favicon():
+    """Site icon for a start page shortcut.  The shortcuts live in the browser, so the
+    signed ``/favicon_proxy`` URL can't be built there; this asks the resolver directly."""
+    # pylint: disable=import-outside-toplevel
+    from searx.favicons import cache as favicon_cache
+    from searx.favicons import proxy, resolvers
+
+    host = flask.request.args.get("host", "").strip().lower()
+    if not SAFE_HOST.match(host):
+        return flask.Response(status=400)
+    # the visitor's resolver (the result list's), then Google when it has nothing (DuckDuckGo misses
+    # a few, e.g. OpenStreetMap).  Google isn't in the resolver map, so it's called here, same cache.
+    chosen = flask.request.preferences.get_value("favicon_resolver")  # type: ignore
+    if chosen in proxy.CFG.resolver_map:
+        data, mime = proxy.search_favicon(chosen, host)
+        if data is not None and mime is not None:
+            return _cached(flask.Response(data, mimetype=mime), 7 * 86400)
+    cached = favicon_cache.CACHE("google", host)  # None = never asked, (None, None) = asked, no icon
+    if cached is None:
+        try:
+            cached = resolvers.google(host, timeout=proxy.CFG.resolver_timeout)
+        except Exception:  # pylint: disable=broad-except
+            cached = (None, None)
+        favicon_cache.CACHE.set("google", host, cached[1], cached[0])
+    data, mime = cached
+    if data is None or mime is None:
+        return _cached(flask.Response(status=404), 86400)
+    return _cached(flask.Response(data, mimetype=mime), 7 * 86400)

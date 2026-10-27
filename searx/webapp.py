@@ -1015,6 +1015,7 @@ app.add_url_rule('/widgets/geocode', methods=['GET'], endpoint="widgets_geocode"
 app.add_url_rule('/widgets/weather', methods=['GET'], endpoint="widgets_weather", view_func=home_widgets.weather)
 app.add_url_rule('/widgets/locate', methods=['GET'], endpoint="widgets_locate", view_func=home_widgets.locate)
 app.add_url_rule('/widgets/photo', methods=['GET'], endpoint="widgets_photo", view_func=home_widgets.photo)
+app.add_url_rule('/widgets/favicon', methods=['GET'], endpoint="widgets_favicon", view_func=home_widgets.favicon)
 app.add_url_rule(
     '/widgets/photo/image', methods=['GET'], endpoint="widgets_photo_image", view_func=home_widgets.photo_image
 )

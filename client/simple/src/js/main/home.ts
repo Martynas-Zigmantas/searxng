@@ -152,11 +152,19 @@ const renderShortcuts = (): HTMLElement => {
     const tile = el(`
       <div class="home-shortcut" role="listitem">
         <a href="${esc(shortcut.url)}" rel="noreferrer" title="${esc(hostOf(shortcut.url))}">
-          <span class="home-shortcut-icon" style="--hue:${tileHue(shortcut.name)}">${esc(letter)}</span>
+          <span class="home-shortcut-icon" style="--hue:${tileHue(shortcut.name)}">${esc(letter)}<img src="./widgets/favicon?host=${encodeURIComponent(hostOf(shortcut.url))}" alt="" hidden></span>
           <span class="home-shortcut-name">${esc(shortcut.name)}</span>
         </a>
         <button type="button" class="home-shortcut-remove" aria-label="Remove ${esc(shortcut.name)}">${ICON.close}</button>
       </div>`);
+    // the site's icon replaces the letter once it loads; no icon (404) = the letter stays
+    const favicon = tile.querySelector("img") as HTMLImageElement;
+    const showFavicon = (): void => {
+      if (favicon.naturalWidth > 0) favicon.closest(".home-shortcut-icon")?.classList.add("has-favicon");
+    };
+    favicon.addEventListener("load", showFavicon);
+    if (favicon.complete) showFavicon();
+    favicon.addEventListener("error", () => favicon.remove());
     listen("click", tile.querySelector("button") as HTMLElement, () => {
       shortcuts.splice(index, 1);
       writeJSON(SHORTCUTS_KEY, shortcuts);
