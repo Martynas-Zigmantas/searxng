@@ -152,7 +152,7 @@ const renderShortcuts = (): HTMLElement => {
     const tile = el(`
       <div class="home-shortcut" role="listitem">
         <a href="${esc(shortcut.url)}" rel="noreferrer" title="${esc(hostOf(shortcut.url))}">
-          <span class="home-shortcut-icon" style="--hue:${tileHue(shortcut.name)}">${esc(letter)}<img src="./widgets/favicon?host=${encodeURIComponent(hostOf(shortcut.url))}" alt="" hidden></span>
+          <span class="home-shortcut-icon" style="--hue:${tileHue(shortcut.name)}"><span class="home-shortcut-letter">${esc(letter)}</span><img src="./widgets/favicon?host=${encodeURIComponent(hostOf(shortcut.url))}" alt="" hidden></span>
           <span class="home-shortcut-name">${esc(shortcut.name)}</span>
         </a>
         <button type="button" class="home-shortcut-remove" aria-label="Remove ${esc(shortcut.name)}">${ICON.close}</button>

@@ -946,9 +946,12 @@ footer {
 
     // site icon on a white disc (light + dark), the letter hides behind it
     &.has-favicon {
-      font-size: 0;
       background: #fff;
       box-shadow: inset 0 0 0 1px rgb(0 0 0 / 8%);
+
+      .home-shortcut-letter {
+        display: none;
+      }
 
       img {
         display: block;
@@ -956,8 +959,8 @@ footer {
     }
 
     img {
-      width: 1.6rem;
-      height: 1.6rem;
+      width: 1.75rem;
+      height: 1.75rem;
       border-radius: 0.3rem;
       object-fit: contain;
     }
