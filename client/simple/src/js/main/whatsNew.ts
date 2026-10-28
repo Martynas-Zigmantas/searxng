@@ -17,7 +17,7 @@ type News = {
   title: string;
   text: string;
   facts?: string[];
-  links?: { label: string; url: string; icon: keyof typeof GLYPH }[];
+  links?: { label: string; url: string; icon: keyof typeof GLYPH; wide?: boolean }[];
   visual?: "epistle-apps";
 };
 
@@ -34,7 +34,8 @@ const NEWS: News[] = [
     ],
     links: [
       { label: "Linux", url: "https://www.epistle.email/linux", icon: "laptop" },
-      { label: "Android", url: "https://epistle.email/app/", icon: "phone" }
+      { label: "Android", url: "https://epistle.email/app/", icon: "phone" },
+      { label: "Visit www.epistle.email", url: "https://www.epistle.email/", icon: "globe", wide: true }
     ],
     visual: "epistle-apps"
   },
@@ -60,6 +61,8 @@ const GLYPH = {
     '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="11" rx="1.5"/><path d="M2 19h20"/></svg>',
   phone:
     '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="2.5" width="10" height="19" rx="2"/><path d="M11 18h2"/></svg>',
+  globe:
+    '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3z"/></svg>',
   // Epistle's mark (epistle site assets/app-icon.svg)
   epistle:
     '<svg viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#4A1238"/><path d="M13 50 C30 21, 63 21, 87 65 M13 50 C30 79, 63 79, 87 35" fill="none" stroke="#F4EBD6" stroke-width="6.5" stroke-linecap="round"/></svg>',
@@ -110,7 +113,7 @@ const renderCard = (news: HTMLElement, root: HTMLElement, place: () => void): vo
     ? `<div class="home-news-links">${top.links
         .map(
           (l, i) =>
-            `<a class="home-news-btn${i ? " home-news-btn-alt" : ""}" href="${esc(l.url)}" rel="noopener">${GLYPH[l.icon]}${esc(l.label)}</a>`
+            `<a class="home-news-btn${i ? " home-news-btn-alt" : ""}${l.wide ? " home-news-btn-wide" : ""}" href="${esc(l.url)}" rel="noopener">${GLYPH[l.icon]}${esc(l.label)}</a>`
         )
         .join("")}</div>`
     : "";
