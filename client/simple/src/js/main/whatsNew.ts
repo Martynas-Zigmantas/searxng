@@ -53,7 +53,7 @@ const NEWS: News[] = [
 ];
 
 const HIDDEN_KEY = "sxng-home-news-hidden"; // id of the newest item when Hide was pressed
-const SIDE = window.matchMedia("(min-width: 75rem)");
+const SIDE = window.matchMedia("(min-width: 85rem)");
 
 const GLYPH = {
   laptop:

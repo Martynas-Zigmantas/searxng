@@ -2078,18 +2078,16 @@ html.home-bg-dark .home-news-btn-alt:visited {
   }
 }
 
-// wide screens: the card is a column on the left, the page centres in what's left
+// wide screens: the card is a column on the left; the same room is kept on the right too,
+// so the page stays centred on the screen (Martynas, 2026-10-28)
 html.home-news-side {
   .index {
-    padding-left: 22rem;
-  }
-
-  body.index_endpoint footer {
+    padding-right: 22rem;
     padding-left: 22rem;
   }
 
   .home-cards {
-    grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(12.5rem, 1fr));
   }
 
   .index > .home-news {
