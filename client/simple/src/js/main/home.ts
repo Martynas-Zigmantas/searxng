@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 /*
- * Start page widgets: greeting + clock, shortcuts, mail (signed in), weather,
- * recent searches, on today's photo (backdrop.ts).  State is in this
+ * Start page widgets: greeting + clock, shortcuts, What's new (whatsNew.ts),
+ * recent searches, mail (a sign-in card when signed out), weather, on today's photo (backdrop.ts).  State is in this
  * browser's localStorage (+ the account when signed in, accountSync.ts);
  * weather, photo and mail go through this instance (/widgets/*, /account/mail).
  */
@@ -11,6 +11,7 @@ import { listen } from "../toolkit.ts";
 import { history, homePrefs } from "../util/homeStore.ts";
 import { needle, startLoading } from "../util/loading.ts";
 import { startBackdrop } from "./backdrop.ts";
+import { renderNews } from "./whatsNew.ts";
 
 type Shortcut = { name: string; url: string };
 type Place = { name: string; region?: string; lat: number; lon: number; auto?: boolean; at?: number };
@@ -386,7 +387,11 @@ const renderRecent = (card: HTMLElement): void => {
   card.innerHTML = `<h3>${ICON.clock}Recent searches<a class="home-link-btn" href="${esc(all)}">See all</a></h3>`;
 
   if (!homePrefs.remember) {
-    card.append(el(`<p class="home-muted">Search history is paused. Turn it back on on the <a href="${esc(all)}">history page</a>.</p>`));
+    card.append(
+      el(
+        `<p class="home-muted">Search history is paused. Turn it back on on the <a href="${esc(all)}">history page</a>.</p>`
+      )
+    );
     return;
   }
   if (items.length === 0) {
@@ -479,6 +484,14 @@ const renderMail = async (card: HTMLElement): Promise<void> => {
 
 let mailTimer: number | undefined;
 
+// signed out: the Inbox card asks for the Epistle account (the same link as the top bar's Sign in)
+const renderMailSignIn = (card: HTMLElement): void => {
+  const signIn = document.querySelector<HTMLAnchorElement>(".account-signin")?.href ?? "/account/login?next=/";
+  const ghost = '<li><span class="home-mail-avatar"></span><span></span></li>';
+  card.classList.add("home-mail-out");
+  card.innerHTML = `<h3>${ICON.mail}Inbox</h3><p class="home-muted">Sign in with your Epistle account to see your newest letters here.</p><a class="home-mail-signin" href="${esc(signIn)}">Sign in</a><ul class="home-mail-ghost" aria-hidden="true">${ghost.repeat(3)}</ul>`;
+};
+
 const watchMail = (card: HTMLElement): void => {
   void renderMail(card);
   window.clearInterval(mailTimer);
@@ -488,7 +501,7 @@ const watchMail = (card: HTMLElement): void => {
 };
 
 document.addEventListener("visibilitychange", () => {
-  const card = document.querySelector<HTMLElement>(".home-mail");
+  const card = document.querySelector<HTMLElement>(".home-mail:not(.home-mail-out)");
   if (document.visibilityState === "visible" && card) void renderMail(card);
 });
 
@@ -500,12 +513,20 @@ const render = (): void => {
   renderGreeting();
   root.innerHTML = "";
 
-  root.append(renderShortcuts());
+  const shortcuts = renderShortcuts();
+  root.append(shortcuts);
 
+  // Recent searches · Inbox · Weather, for everyone (Martynas, 2026-10-28)
   const cards = el('<div class="home-cards"></div>');
-  if (signedIn) {
+  {
+    const card = el('<article class="home-card"></article>');
+    renderRecent(card);
+    cards.append(card);
+  }
+  {
     const card = el('<article class="home-card home-mail"></article>');
-    watchMail(card);
+    if (signedIn) watchMail(card);
+    else renderMailSignIn(card);
     cards.append(card);
   }
   {
@@ -513,12 +534,8 @@ const render = (): void => {
     void renderWeather(card);
     cards.append(card);
   }
-  {
-    const card = el('<article class="home-card"></article>');
-    renderRecent(card);
-    cards.append(card);
-  }
   root.append(cards);
+  renderNews(root, shortcuts);
 };
 
 startBackdrop();

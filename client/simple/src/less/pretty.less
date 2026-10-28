@@ -1744,6 +1744,426 @@ html.home-bg-on:not(.home-bg-dark) {
   }
 }
 
+/// What's new (main/whatsNew.ts) ----------------------------------------------
+// a card with a picture: a column on the left on wide screens, under the shortcuts on phones
+
+.home-card.home-news {
+  padding: 0;
+  overflow: hidden;
+}
+
+.home-news-hero {
+  position: relative;
+  height: 11rem;
+  overflow: hidden;
+  background: radial-gradient(
+    120% 90% at 20% 0%,
+    #7a2a5c 0%,
+    #4a1238 45%,
+    #24081a 100%
+  );
+
+  img {
+    display: block;
+    width: 100%;
+  }
+}
+
+.home-news-win {
+  position: absolute;
+  top: 1.6rem;
+  left: 1.1rem;
+  width: 74%;
+  border: 1px solid rgb(255 255 255 / 18%);
+  border-radius: 9px;
+  overflow: hidden;
+  box-shadow: 0 14px 34px rgb(0 0 0 / 50%);
+  transform: rotate(-4deg);
+}
+
+.home-news-winbar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 12px;
+  padding-left: 7px;
+  background: #2d0b22;
+
+  i {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: rgb(255 255 255 / 35%);
+  }
+}
+
+.home-news-phone {
+  position: absolute;
+  top: 2.1rem;
+  right: 1rem;
+  width: 25%;
+  border: 3px solid #120510;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 14px 34px rgb(0 0 0 / 55%);
+  transform: rotate(5deg);
+}
+
+.home-news-badge {
+  position: absolute;
+  top: 0.75rem;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid rgb(244 235 214 / 25%);
+  border-radius: 99px;
+  background: rgb(18 5 16 / 75%);
+  color: #f4ebd6;
+  font-size: 0.68rem;
+  font-weight: 600;
+
+  svg {
+    width: 0.75rem;
+    height: 0.75rem;
+  }
+}
+
+.home-news-badge-l {
+  left: 0.85rem;
+}
+
+.home-news-badge-r {
+  right: 0.75rem;
+}
+
+.home-news-in {
+  padding: 1rem 1.15rem 1.1rem;
+}
+
+.home-news-tag {
+  display: inline-block;
+  padding: 0.3rem 0.5rem;
+  border-radius: 99px;
+  background: linear-gradient(90deg, #fff1c7, #f5c76a, #e8707a);
+  color: #1b0b14;
+  font-size: 0.66rem;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.home-news-head {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  margin: 0.75rem 0 0.5rem;
+
+  > svg {
+    width: 2.1rem;
+    height: 2.1rem;
+    flex: none;
+  }
+
+  h3 {
+    margin: 0;
+    font-size: 1.05rem;
+    line-height: 1.25;
+  }
+
+  small {
+    display: block;
+    margin-top: 0.1rem;
+    color: var(--p-text-2);
+    font-size: 0.75rem;
+    opacity: 0.8;
+  }
+}
+
+.home-news-text {
+  margin: 0 0 0.75rem;
+  color: var(--p-text);
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+.home-news-facts {
+  display: grid;
+  gap: 0.35rem;
+  margin: 0 0 0.9rem;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+
+    &::before {
+      content: "";
+      width: 6px;
+      height: 6px;
+      flex: none;
+      border-radius: 50%;
+      background: linear-gradient(#f5c76a, #e8707a);
+      transform: translateY(-1px);
+    }
+  }
+}
+
+.home-news-links {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+
+.home-news-btn,
+.home-news-btn:visited {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  padding: 0.55rem 0.6rem;
+  border: 1px solid rgb(255 255 255 / 20%);
+  border-radius: 99px;
+  background: #4a1238;
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: none;
+
+  svg {
+    width: 1rem;
+    height: 1rem;
+  }
+
+  &:hover {
+    background: #5e1a48;
+    text-decoration: none;
+  }
+}
+
+.home-news-btn-alt,
+.home-news-btn-alt:visited {
+  border-color: rgb(74 18 56 / 35%);
+  background: rgb(74 18 56 / 10%);
+  color: var(--p-text);
+
+  &:hover {
+    background: rgb(74 18 56 / 18%);
+  }
+}
+
+html.home-bg-dark .home-news-btn-alt,
+html.home-bg-dark .home-news-btn-alt:visited {
+  border-color: rgb(255 255 255 / 22%);
+  background: rgb(255 255 255 / 10%);
+  color: #fff;
+
+  &:hover {
+    background: rgb(255 255 255 / 16%);
+  }
+}
+
+.home-news-earlier {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0.9rem 0 0;
+  padding: 0.8rem 0 0;
+  border-top: 1px solid rgb(127 127 127 / 20%);
+  list-style: none;
+
+  &[hidden] {
+    display: none;
+  }
+
+  strong {
+    display: block;
+    color: var(--p-text);
+    font-size: 0.85rem;
+  }
+
+  p {
+    margin: 0.15rem 0 0;
+    font-size: 0.8rem;
+    line-height: 1.45;
+  }
+}
+
+.home-news-date {
+  display: block;
+  font-size: 0.7rem;
+  opacity: 0.75;
+}
+
+.home-news-foot {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-top: 0.9rem;
+  padding-top: 0.7rem;
+  border-top: 1px solid rgb(127 127 127 / 20%);
+
+  button {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--p-text-2);
+    font: inherit;
+    font-size: 0.75rem;
+    text-align: left;
+    cursor: pointer;
+
+    &:hover {
+      color: var(--p-text);
+    }
+  }
+
+  b {
+    color: var(--p-text);
+    font-weight: 500;
+  }
+}
+
+.home-news-hide {
+  flex: none;
+}
+
+// hidden: a pill that opens the card again
+.home-news-pill {
+  display: flex;
+  justify-content: center;
+
+  button {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    max-width: 100%;
+    padding: 0.4rem 0.9rem 0.4rem 0.45rem;
+    border: 1px solid rgb(255 255 255 / 18%);
+    border-radius: 99px;
+    background: rgb(30 12 24 / 72%);
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
+    color: #fff;
+    font: inherit;
+    font-size: 0.85rem;
+    cursor: pointer;
+
+    svg {
+      width: 1.5rem;
+      height: 1.5rem;
+      flex: none;
+      padding: 0.25rem;
+      border-radius: 50%;
+      background: linear-gradient(90deg, #fff1c7, #f5c76a, #e8707a);
+      color: #4a1238;
+    }
+
+    span {
+      font-weight: 600;
+    }
+
+    em {
+      overflow: hidden;
+      font-style: normal;
+      opacity: 0.8;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
+}
+
+// wide screens: the card is a column on the left, the page centres in what's left
+html.home-news-side {
+  .index {
+    padding-left: 22rem;
+  }
+
+  body.index_endpoint footer {
+    padding-left: 22rem;
+  }
+
+  .home-cards {
+    grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  }
+
+  .index > .home-news {
+    position: fixed;
+    top: 5.5rem;
+    left: 1.5rem;
+    z-index: 5;
+    width: 19.5rem;
+    max-height: calc(100vh - 7rem);
+    overflow-y: auto;
+    scrollbar-width: thin;
+  }
+}
+
+html.home-news-side-pill .index > .home-news-pill {
+  position: fixed;
+  top: 5.5rem;
+  left: 1.5rem;
+  z-index: 5;
+  max-width: 19.5rem;
+}
+
+// the signed-out Inbox card
+.home-mail-signin,
+.home-mail-signin:visited {
+  display: inline-flex;
+  margin-top: 0.25rem;
+  padding: 0.5rem 1.1rem;
+  border-radius: 99px;
+  background: #8ab4f8;
+  color: #0b1b33;
+  font-weight: 600;
+  text-decoration: none;
+
+  &:hover {
+    background: #a5c5fa;
+    text-decoration: none;
+  }
+}
+
+.home-mail-ghost {
+  display: grid;
+  gap: 0.6rem;
+  margin: 1rem 0 0;
+  padding: 0;
+  list-style: none;
+  opacity: 0.35;
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+
+  .home-mail-avatar {
+    background: currentcolor;
+  }
+
+  li > span:last-child {
+    height: 0.5rem;
+    flex: 1;
+    border-radius: 4px;
+    background: currentcolor;
+  }
+
+  li:nth-child(2) > span:last-child {
+    flex: 0.7;
+  }
+
+  li:nth-child(3) > span:last-child {
+    flex: 0.85;
+  }
+}
+
 /// Search history (/history, main/history.ts) --------------------------------
 
 #main_history {
