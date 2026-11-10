@@ -2,7 +2,7 @@
 
 # Alexandria
 
-**Alexandria** is Martynas's own private search engine, named after the ancient library that tried to hold everything ever written. It will run at **https://alexandria.epistle.email** (the old name, search.jack-sally.com, redirects there).
+**Alexandria** is Martynas's own private search engine, named after the ancient library that tried to hold everything ever written. It runs at **https://alexandria.epistle.email** (live since 2026-10-26; the old name, search.jack-sally.com, redirects there).
 It asks Google, Brave, DuckDuckGo, Wikipedia and 70+ other engines at once, merges the answers into one clean
 list, and none of them ever sees who searched. No ads, no tracking, no profile.
 
@@ -57,12 +57,12 @@ stored in a cookie for this browser. To copy the same setup to your phone, use t
 | Path | What |
 |---|---|
 | `client/simple/src/less/pretty.less` | **The Alexandria skin.** All the styling, loaded last over upstream's theme. |
-| `client/simple/src/js/main/home.ts` | Start page widgets (`whatsNew.ts`: the What's new card). `extras.ts`: launcher + account menu, `/` hotkey, copy link, history. `util/homeStore.ts`: localStorage. |
+| `client/simple/src/js/main/home.ts` | Start page widgets (`whatsNew.ts`: the What's new card). `extras.ts`: account menu (+ the launcher, off), `/` hotkey, copy link, history. `util/homeStore.ts`: localStorage. |
 | `client/simple/src/fonts/` | Inter, variable (OFL). |
 | `searx/templates/simple/` | `index.html` (start page), `elements/apps.html` (launcher, off), `elements/account.html` (avatar, account menu, Mail pill), `elements/category_icons.html` (tab glyphs), `elements/sliders_icon.html` (Preferences), `elements/brand_mark.html` (generated logo). |
 | `searx/accounts.py` | The Alexandria account (= Epistle account): `/account/login`, `/account/callback`, `/account/logout`, `/account/data` (sync), the silent check. Template `elements/account.html`, sync `client/simple/src/js/util/accountSync.ts`. |
 | `searx/home_widgets.py` | `/widgets/geocode`, `/widgets/weather`, `/widgets/locate` (IP → rough location): the server side of the weather widget. |
-| `searx/settings.yml` | Defaults baked into the image: name *Alexandria*, PWA colours, the app launcher list (empty = no launcher). |
+| `searx/settings.yml` | Defaults baked into the image: name *Alexandria*, PWA colours, the app launcher list (`brand.custom.apps: []` = no launcher). |
 | `searx/static/themes/simple/` | **Built** theme (committed, like upstream). Never edit by hand, run the build. |
 | `brand/` | Logo: `src/mark.mjs` (the drawing; `S1` three scrolls is the logo, `N2` needle = the loading spinner, `N1` the old star), `src/scrolls.mjs` (the Epistle glyph), `src/logo.mjs` (renders `logo/*` + the theme's favicon / app icons). |
 | `deploy/` | `build-image.sh`, `alexandria.portainer.yml`, `settings.example.yml` for node2. |
@@ -102,8 +102,8 @@ Then Portainer → Stacks → **alexandria** → *Pull and redeploy*. It is a **
 `deploy/alexandria.portainer.yml`); the image is local (`pull_policy: never`), so always build first. No environment
 variables: the container writes its own `settings.yml` (random `secret_key`, `use_default_settings: true`) into the
 `alexandria-config` volume on first start; overrides are optional (`deploy/settings.example.yml`).
-The reverse proxy maps `alexandria.epistle.email` → `192.168.178.27:48777` (cert `/etc/letsencrypt/live/epistle-domains/`, Cloudflare DNS record grey-cloud; `search.jack-sally.com` 301s there) (not hosted yet, 2026-10-24: the
-stack is ready, the first deploy is still to do; see BookStack → Self Hosting → Alexandria → *deploy + update*).
+The reverse proxy maps `alexandria.epistle.email` → `192.168.178.27:48777` (cert `/etc/letsencrypt/live/epistle-domains/`, Cloudflare DNS record grey-cloud; `search.jack-sally.com` 301s there).
+Live since 2026-10-26; runbook: BookStack → Self Hosting → Alexandria → *deploy + update*.
 
 ## Re-render the logo and the README art
 
