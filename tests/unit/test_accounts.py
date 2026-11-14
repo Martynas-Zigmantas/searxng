@@ -244,14 +244,26 @@ class PhotoTestCase(SearxTestCase):
         pool = [
             {"id": "Wolves_EN-GB1", "base": "/th?id=OHR.Wolves_EN-GB1", "title": "Wolves", "credit": "(c) a"},
             {"id": "Clock_EN-GB2", "base": "/th?id=OHR.Clock_EN-GB2", "title": "Clock", "credit": "(c) b"},
+            {"id": "Lake_EN-GB3", "base": "/th?id=OHR.Lake_EN-GB3", "title": "Lake", "credit": "(c) c"},
         ]
         self.setattr4test(hw, "_photo_pool", lambda: pool)
 
     def test_never_the_last_one(self):
         for _ in range(10):
             data = self.app.get("/widgets/photo?not=Wolves_EN-GB1").json
-            self.assertEqual(data["id"], "Clock_EN-GB2")
-        self.assertIn("/widgets/photo/image?id=Clock_EN-GB2", data["image"])
+            self.assertIn(data["id"], ("Clock_EN-GB2", "Lake_EN-GB3"))
+        self.assertIn(f"/widgets/photo/image?id={data['id']}", data["image"])
+
+    def test_today_first_then_the_shuffle(self):
+        # a browser that hasn't been shown the newest photo gets it, flagged as today's
+        data = self.app.get("/widgets/photo?seed=abc&n=0&today=").json
+        self.assertEqual((data["id"], data["today"]), ("Wolves_EN-GB1", True))
+        # after that, n walks the rest of the pool, every photo once before any repeats
+        seen = [self.app.get(f"/widgets/photo?seed=abc&n={n}&today=Wolves_EN-GB1").json for n in range(4)]
+        ids = [d["id"] for d in seen]
+        self.assertEqual(set(ids[:2]), {"Clock_EN-GB2", "Lake_EN-GB3"})
+        self.assertEqual(ids[2:], ids[:2])
+        self.assertFalse(any(d["today"] for d in seen))
 
     def test_only_pool_ids_are_fetched(self):
         self.assertEqual(self.app.get("/widgets/photo/image?id=../../etc/passwd").status_code, 404)

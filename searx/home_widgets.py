@@ -19,6 +19,7 @@ can't be located, then the server's own public IP is used (same region for a
 home server).  Results are cached in memory for 6 hours per IP.
 """
 
+import hashlib
 import ipaddress
 import json
 import os
@@ -198,14 +199,15 @@ def locate():
 
 # ----------------------------------------------------------------------- photo of the day
 
-# The start page background: a Bing photo of the day, a different one at every visit. The pool is the last ~2 weeks of
-# Bing's English markets (refreshed every few hours) plus every photo seen since, up to PHOTO_POOL_MAX, kept on disk
-# so a restart doesn't shrink it. The browser only ever talks to this instance: the pictures are fetched once and
+# The start page background: a Bing photo of the day. The first visit after a new one comes out shows it (today's);
+# every other visit walks this browser's own shuffle of the whole pool, so nothing repeats until it has all been seen.
+# The pool is the last ~2 weeks of Bing's English markets (refreshed every few hours) plus every photo seen since, up
+# to PHOTO_POOL_MAX, kept on disk so a restart doesn't shrink it. The browser only ever talks to this instance: the pictures are fetched once and
 # cached on disk (``/widgets/photo/image``), and only ids from the pool are fetched, never a URL from the request.
 PHOTO_META_URL = "https://www.bing.com/HPImageArchive.aspx"
 PHOTO_MARKETS = ("en-GB", "en-US", "en-IN", "en-CA", "en-AU", "en-NZ")
 PHOTO_REFRESH = 6 * 3600
-PHOTO_POOL_MAX = 60
+PHOTO_POOL_MAX = 1000
 PHOTO_SIZES = {"wide": "1920x1080", "tall": "1080x1920"}
 _photo_lock = threading.Lock()
 _photo_state: dict = {"fetched": 0.0, "pool": None}
@@ -271,6 +273,7 @@ def _photo_pool() -> list[dict]:
                             "base": base,
                             "title": str(image.get("title") or ""),
                             "credit": str(image.get("copyright") or ""),
+                            "date": str(image.get("startdate") or ""),
                         }
                     )
         # one per photo (the same picture has a different id per market): newest first, then what we had
@@ -281,6 +284,8 @@ def _photo_pool() -> list[dict]:
             if name not in names:
                 names.add(name)
                 merged.append(item)
+        # newest first by Bing's date (markets run on different days); photos from before dates were kept go last
+        merged.sort(key=lambda item: str(item.get("date") or ""), reverse=True)
         if fresh:
             _photo_state["pool"] = merged[:PHOTO_POOL_MAX]
             _save_pool(_photo_state["pool"])
@@ -288,18 +293,31 @@ def _photo_pool() -> list[dict]:
 
 
 def photo():
-    """A random photo from the pool (not the one this browser saw last: ``?not=<id>``)."""
+    """Today's photo the first time this browser asks for it (``?today=<id it was last given as today>``), then
+    photo number ``n`` of this browser's shuffle (``?seed=``) of the rest of the pool.  Older pages only send
+    ``?not=<last id>``: a random one that isn't that."""
     pool = _photo_pool()
     if not pool:
         return jsonify({"error": "photo unavailable"}), 502
-    last = flask.request.args.get("not", "")
-    choices = [p for p in pool if p["id"] != last] or pool
-    pick = secrets.choice(choices)
+    args = flask.request.args
+    seed, n = args.get("seed", ""), args.get("n", "")
+    newest, is_today = pool[0], False
+    if re.fullmatch(r"[0-9a-z]{1,32}", seed) and n.isdigit():
+        if args.get("today", "") != newest["id"]:
+            pick, is_today = newest, True
+        else:
+            # a per-browser order that new photos slot into without reshuffling what's left
+            rest = sorted(pool[1:] or pool, key=lambda p: hashlib.sha256(f"{seed}:{p['id']}".encode()).digest())
+            pick = rest[int(n[:9]) % len(rest)]
+    else:
+        last = args.get("not", "")
+        pick = secrets.choice([p for p in pool if p["id"] != last] or pool)
     response = jsonify(
         {
             "id": pick["id"],
             "title": pick["title"],
             "credit": pick["credit"],
+            "today": is_today,
             "image": flask.url_for("widgets_photo_image", id=pick["id"]),
         }
     )
