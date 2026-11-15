@@ -7,7 +7,8 @@
  *   constellation  plum line icons joined by faint threads, drifting
  *   colour         the same in gold, rose, violet, teal
  *   wallpaper      an even pattern of faint icons, panning slowly (endpapers)
- *   shelves        bookshelf walls down both sides, a gold ladder, a quill, a candle
+ *   tint           soft glows in the colours of the knowledge panel's picture (Alexandria's own without one);
+ *                  replaced the bookshelves 2026-11-15 ("colours of the result", Martynas)
  *   glows          coloured icons floating upwards (no colour wash: "the icons are pretty enough")
  *
  * Light and dark versions; prefers-reduced-motion gets a still frame.  The
@@ -17,7 +18,7 @@
 
 import { LIBRARY_ICONS } from "../util/libraryIcons.ts";
 
-const SCENES = ["constellation", "colour", "wallpaper", "shelves", "glows"] as const;
+const SCENES = ["constellation", "colour", "wallpaper", "tint", "glows"] as const;
 type SceneName = (typeof SCENES)[number];
 
 const LAST_KEY = "sxng-results-bg";
@@ -269,56 +270,86 @@ const place = (
   return el;
 };
 
-// line-drawn bookcases down both sides, a gold ladder, a quill bobbing, a candle flickering
-const shelves = (layer: HTMLElement): void => {
-  layer.style.background = PAGE;
-  const w = layer.clientWidth || window.innerWidth;
-  const h = layer.clientHeight || window.innerHeight;
-  const stroke = dark ? "rgba(244,235,214,0.16)" : "rgba(74,18,56,0.16)";
-  const gold = dark ? "rgba(230,196,110,0.55)" : "rgba(201,162,74,0.55)";
-  const caseSvg = (cw: number, ch: number): string => {
-    let g = `<rect x="2" y="2" width="${cw - 4}" height="${ch - 4}" rx="4"/>`;
-    const count = Math.max(2, Math.floor(ch / 120));
-    for (let k = 1; k <= count; k += 1) {
-      const y = (k * ch) / (count + 0.2);
-      g += `<path d="M2 ${y}H${cw - 2}"/>`;
-      let x = 10;
-      while (x < cw - 26) {
-        const bw = rand(10, 24);
-        const bh = rand(50, 90);
-        if (Math.random() < 0.12) {
-          x += 18;
-          continue;
-        }
-        const tilt = Math.random() < 0.1 ? -12 : 0;
-        g += `<rect x="${x}" y="${y - bh}" width="${bw}" height="${bh}" rx="1.5" transform="rotate(${tilt} ${x + bw / 2} ${y})"/>`;
-        if (bh > 60) g += `<path d="M${x + 2} ${y - bh + 8}h${bw - 4}M${x + 2} ${y - 12}h${bw - 4}"/>`;
-        x += bw + 2;
-      }
-    }
-    return `<svg width="${cw}" height="${ch}" fill="none" stroke="${stroke}" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">${g}</svg>`;
-  };
-  for (const side of ["left", "right"]) {
-    const bookcase = document.createElement("div");
-    bookcase.className = "lib-shelves";
-    bookcase.style.cssText = `${side}:-20px`;
-    bookcase.innerHTML = caseSvg(250, h);
-    layer.append(bookcase);
+// soft glows in the corners in the colours of the knowledge panel's picture (Apple Park's rainbow logo -> orange,
+// pink, blue; a forest -> greens); no picture, or one we can't read -> Alexandria's gold, rose and plum
+const TINT_DEFAULT = dark ? ["#7a2a5c", "#8a5a1e", "#3d2a6e"] : ["#f2c46b", "#e98c9a", "#b48ad8"];
+
+const toHsl = (r: number, g: number, b: number): [number, number, number] => {
+  const [rn, gn, bn] = [r / 255, g / 255, b / 255];
+  const max = Math.max(rn, gn, bn);
+  const min = Math.min(rn, gn, bn);
+  const l = (max + min) / 2;
+  if (max === min) return [0, 0, l];
+  const d = max - min;
+  const sat = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+  let hue = (rn - gn) / d + 4;
+  if (max === rn) hue = (gn - bn) / d + (gn < bn ? 6 : 0);
+  else if (max === gn) hue = (bn - rn) / d + 2;
+  hue *= 60;
+  return [hue, sat, l];
+};
+
+// up to three lively colours of a picture, made soft enough to sit behind text
+const pictureColours = async (src: string): Promise<string[]> => {
+  const img = new Image();
+  img.crossOrigin = "anonymous";
+  img.src = src;
+  await img.decode();
+  const size = 24;
+  const canvas = document.createElement("canvas");
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return [];
+  ctx.drawImage(img, 0, 0, size, size);
+  const px = ctx.getImageData(0, 0, size, size).data; // throws on a picture from a site without CORS: defaults stay
+  const buckets = new Map<number, { n: number; h: number; s: number }>();
+  for (let i = 0; i < px.length; i += 4) {
+    const [hue, sat, light] = toHsl(px[i] ?? 0, px[i + 1] ?? 0, px[i + 2] ?? 0);
+    if (sat < 0.25 || light < 0.15 || light > 0.92 || (px[i + 3] ?? 0) < 128) continue; // greys, black, white, see-through
+    const key = Math.round(hue / 30) % 12;
+    const b = buckets.get(key) ?? { n: 0, h: 0, s: 0 };
+    b.n += 1;
+    b.h += hue;
+    b.s += sat;
+    buckets.set(key, b);
   }
-  const ladder = place(
-    layer,
-    "ladder",
-    95,
-    h * 0.7,
-    Math.min(320, h * 0.38),
-    gold.replace("0.55", "0.4"),
-    "lib-ladder",
-    0.8
+  // the most common hues, at least 40° apart (two yellows side by side look like one muddy glow)
+  const picked: { n: number; h: number; s: number }[] = [];
+  for (const b of [...buckets.values()].sort((x, y) => y.n - x.n)) {
+    const hue = b.h / b.n;
+    const near = picked.some((p) => {
+      const diff = Math.abs(p.h / p.n - hue);
+      return Math.min(diff, 360 - diff) < 40;
+    });
+    if (!near) picked.push(b);
+    if (picked.length === 3) break;
+  }
+  return picked.map(
+    (b) =>
+      `hsl(${Math.round(b.h / b.n)} ${Math.round(Math.min(85, Math.max(45, (b.s / b.n) * 100)))}% ${dark ? 34 : 72}%)`
   );
-  ladder.style.transform = "rotate(10deg)";
-  place(layer, "quill", w - 120, 190, 46, gold, "lib-bob", 1.1);
-  place(layer, "candle", w - 210, h - 130, 40, gold, "lib-flicker", 1.1);
-  place(layer, "globe", 120, 190, 44, stroke.replace("0.16", "0.3"), "lib-bob lib-slow", 1.1);
+};
+
+const tint = (layer: HTMLElement): void => {
+  layer.style.background = PAGE;
+  const spots = ["lib-tint-a", "lib-tint-b", "lib-tint-c"].map((cls, i) => {
+    const el = document.createElement("div");
+    el.className = `lib-tint ${cls}`;
+    el.style.background = `radial-gradient(closest-side, ${TINT_DEFAULT[i]}, transparent)`;
+    layer.append(el);
+    return el;
+  });
+  const src = document.querySelector<HTMLImageElement>("#infoboxes .infobox > img")?.src;
+  if (!src) return;
+  void pictureColours(src)
+    .then((found) => {
+      const colours = [...found, ...TINT_DEFAULT].slice(0, 3);
+      spots.forEach((el, i) => {
+        el.style.background = `radial-gradient(closest-side, ${colours[i]}, transparent)`;
+      });
+    })
+    .catch(() => undefined);
 };
 
 // coloured icons floating slowly upwards on the plain page
@@ -352,7 +383,7 @@ export const startLibrary = (): void => {
   if (scene === "constellation") constellation(layer, false);
   else if (scene === "colour") constellation(layer, true);
   else if (scene === "wallpaper") wallpaper(layer);
-  else if (scene === "shelves") shelves(layer);
+  else if (scene === "tint") tint(layer);
   else glows(layer);
 };
 

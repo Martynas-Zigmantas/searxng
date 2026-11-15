@@ -3849,54 +3849,49 @@ html.library-bg-on body.results_endpoint {
   }
 }
 
-.lib-shelves {
+// "tint": three soft glows drifting slowly in the corners (main/library.ts)
+.lib-tint {
   position: absolute;
-  top: 120px;
+  width: 55vw;
+  height: 55vw;
+  max-width: 60rem;
+  max-height: 60rem;
+  border-radius: 50%;
+  opacity: 0.55;
+  transition: background 1.2s ease;
+  animation: lib-drift 40s ease-in-out infinite alternate;
 }
 
-.lib-ladder {
-  transform-origin: 50% 100%;
+.lib-tint-a {
+  top: -18vw;
+  left: -16vw;
 }
 
-.lib-bob {
-  animation: lib-bob 7s ease-in-out infinite alternate;
+.lib-tint-b {
+  top: 12vh;
+  right: -20vw;
+  animation-duration: 52s;
+  animation-direction: alternate-reverse;
+}
 
-  &.lib-slow {
-    animation-duration: 11s;
+.lib-tint-c {
+  bottom: -28vw;
+  left: 30vw;
+  animation-duration: 64s;
+}
+
+@keyframes lib-drift {
+  from {
+    transform: translate(0, 0) scale(1);
   }
-}
 
-.lib-flicker svg {
-  animation: lib-flicker 2.6s ease-in-out infinite;
+  to {
+    transform: translate(4vw, 3vh) scale(1.08);
+  }
 }
 
 .lib-float {
   animation: lib-float 60s linear infinite;
-}
-
-@keyframes lib-bob {
-  from {
-    transform: translateY(0) rotate(-4deg);
-  }
-
-  to {
-    transform: translateY(-14px) rotate(5deg);
-  }
-}
-
-@keyframes lib-flicker {
-  0%,
-  100% {
-    opacity: 1;
-  }
-
-  45% {
-    opacity: 0.75;
-  }
-
-  60% {
-    opacity: 0.95;
-  }
 }
 
 @keyframes lib-float {
@@ -3917,8 +3912,7 @@ html.library-bg-on body.results_endpoint {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .lib-bob,
-  .lib-flicker svg,
+  .lib-tint,
   .lib-float {
     animation: none;
   }
