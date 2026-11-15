@@ -289,7 +289,7 @@ const toHsl = (r: number, g: number, b: number): [number, number, number] => {
   return [hue, sat, l];
 };
 
-// up to three lively colours of a picture, made soft enough to sit behind text
+// up to three lively colours of a picture, made soft enough to sit behind text; [] when it's mostly grey
 const pictureColours = async (src: string): Promise<string[]> => {
   const img = new Image();
   img.crossOrigin = "anonymous";
@@ -304,9 +304,11 @@ const pictureColours = async (src: string): Promise<string[]> => {
   ctx.drawImage(img, 0, 0, size, size);
   const px = ctx.getImageData(0, 0, size, size).data; // throws on a picture from a site without CORS: defaults stay
   const buckets = new Map<number, { n: number; h: number; s: number }>();
+  let lively = 0;
   for (let i = 0; i < px.length; i += 4) {
     const [hue, sat, light] = toHsl(px[i] ?? 0, px[i + 1] ?? 0, px[i + 2] ?? 0);
     if (sat < 0.25 || light < 0.15 || light > 0.92 || (px[i + 3] ?? 0) < 128) continue; // greys, black, white, see-through
+    lively += 1;
     const key = Math.round(hue / 30) % 12;
     const b = buckets.get(key) ?? { n: 0, h: 0, s: 0 };
     b.n += 1;
@@ -314,6 +316,8 @@ const pictureColours = async (src: string): Promise<string[]> => {
     b.s += sat;
     buckets.set(key, b);
   }
+  // a screenshot or a black-and-white photo: a few coloured pixels aren't "its colours"
+  if (lively < size * size * 0.08) return [];
   // the most common hues, at least 40° apart (two yellows side by side look like one muddy glow)
   const picked: { n: number; h: number; s: number }[] = [];
   for (const b of [...buckets.values()].sort((x, y) => y.n - x.n)) {
@@ -331,23 +335,59 @@ const pictureColours = async (src: string): Promise<string[]> => {
   );
 };
 
+// the knowledge panel's picture, else (no picture, or a grey one like a desktop screenshot) the site icons of the
+// first results that have colour: "linux mint" -> Mint's green, "youtube" -> red
+const resultColours = async (): Promise<string[]> => {
+  const picture = document.querySelector<HTMLImageElement>("#infoboxes .infobox > img")?.src;
+  if (picture) {
+    const found = await pictureColours(picture).catch(() => []);
+    if (found.length > 0) return found;
+  }
+  const icons = [...document.querySelectorAll<HTMLImageElement>("#urls .result .favicon img")].slice(0, 6);
+  // all at once (they're tiny), then the first result's that has colour
+  const all = await Promise.all(icons.map((icon) => pictureColours(icon.src).catch(() => [])));
+  const first = all.find((found) => found.length > 0);
+  if (first) return first;
+  return [];
+};
+
+// one or two colours (a one-colour logo): the rest are its neighbours on the colour wheel, so the page stays "its" colour
+const HSL = /hsl\((\d+) (\d+)% (\d+)%\)/;
+const withNeighbours = (found: string[]): string[] => {
+  const colours = [...found];
+  const [, hue = "0", sat = "60", light = "70"] = HSL.exec(found[0] ?? "") ?? [];
+  for (const turn of [38, -38]) {
+    if (colours.length >= 3) break;
+    colours.push(`hsl(${(Number(hue) + turn + 360) % 360} ${sat}% ${light}%)`);
+  }
+  return colours;
+};
+
 const tint = (layer: HTMLElement): void => {
   layer.style.background = PAGE;
+  html.classList.add("lib-scene-tint");
+  const glow = (colour: string): string => `radial-gradient(closest-side, ${colour}, transparent)`;
   const spots = ["lib-tint-a", "lib-tint-b", "lib-tint-c"].map((cls, i) => {
     const el = document.createElement("div");
     el.className = `lib-tint ${cls}`;
-    el.style.background = `radial-gradient(closest-side, ${TINT_DEFAULT[i]}, transparent)`;
+    el.style.background = glow(TINT_DEFAULT[i] ?? "");
     layer.append(el);
     return el;
   });
-  const src = document.querySelector<HTMLImageElement>("#infoboxes .infobox > img")?.src;
-  if (!src) return;
-  void pictureColours(src)
+  // phones: the cards fill the width, so the colours also wash down from the top, behind the name and the search box
+  const wash = document.createElement("div");
+  wash.className = "lib-tint-top";
+  layer.append(wash);
+  const paint = (colours: string[]): void => {
+    spots.forEach((el, i) => {
+      el.style.background = glow(colours[i] ?? "");
+    });
+    wash.style.background = `radial-gradient(70% 90% at 0% 0%, ${colours[0]}, transparent), radial-gradient(70% 90% at 100% 10%, ${colours[1]}, transparent)`;
+  };
+  paint(TINT_DEFAULT);
+  void resultColours()
     .then((found) => {
-      const colours = [...found, ...TINT_DEFAULT].slice(0, 3);
-      spots.forEach((el, i) => {
-        el.style.background = `radial-gradient(closest-side, ${colours[i]}, transparent)`;
-      });
+      if (found.length > 0) paint(withNeighbours(found));
     })
     .catch(() => undefined);
 };

@@ -3880,6 +3880,41 @@ html.library-bg-on body.results_endpoint {
   animation-duration: 64s;
 }
 
+.lib-tint-top {
+  display: none;
+}
+
+@media screen and (max-width: @phone) {
+  // the cards fill a phone's width: bigger, stronger glows, and a wash behind the top of the page
+  .lib-tint {
+    width: 120vw;
+    height: 120vw;
+    opacity: 0.8;
+  }
+
+  .lib-tint-top {
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+    display: block;
+    height: 70vh;
+    opacity: 0.9;
+    transition: background 1.2s ease;
+  }
+
+  // the sticky search bar turns to frosted glass: the colours show through, scrolled results blur out under it
+  html.lib-scene-tint body.results_endpoint form#search {
+    background: color-mix(in srgb, var(--p-bg) 72%, transparent);
+    -webkit-backdrop-filter: blur(18px) saturate(140%);
+    backdrop-filter: blur(18px) saturate(140%);
+  }
+
+  html.lib-scene-tint body.results_endpoint #search_header {
+    background: transparent;
+  }
+}
+
 @keyframes lib-drift {
   from {
     transform: translate(0, 0) scale(1);
