@@ -23,14 +23,21 @@ export default class MapView extends Plugin {
   }
 
   protected async run(): Promise<void> {
-    const { leafletTarget: target, mapLon = "0", mapLat = "0", mapGeojson } = this.map.dataset;
+    const {
+      leafletTarget: target,
+      mapLon = "0",
+      mapLat = "0",
+      mapGeojson,
+      mapTiles = "/widgets/tile/"
+    } = this.map.dataset;
 
     const lon = Number.parseFloat(mapLon);
     const lat = Number.parseFloat(mapLat);
     const view = new View({ maxZoom: 16, enableRotation: false });
     const map = new OlMap({
       target: target,
-      layers: [new TileLayer({ source: new OSM({ maxZoom: 16 }) })],
+      // tiles through this instance (searx/places.py): the browser never talks to OpenStreetMap
+      layers: [new TileLayer({ source: new OSM({ url: `${mapTiles}{z}/{x}/{y}.png`, maxZoom: 16 }) })],
       view: view
     });
 

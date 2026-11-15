@@ -113,7 +113,7 @@ from searx.locales import (
 # renaming names from searx imports ...
 from searx.autocomplete import search_autocomplete, backends as autocomplete_backends
 from searx import favicons
-from searx import accounts, home_widgets
+from searx import accounts, home_widgets, places
 
 from searx.valkeydb import initialize as valkey_initialize
 from searx.sxng_locales import sxng_locales
@@ -1020,6 +1020,7 @@ app.add_url_rule(
     '/widgets/photo/image', methods=['GET'], endpoint="widgets_photo_image", view_func=home_widgets.photo_image
 )
 accounts.register(app)
+places.register(app)
 
 
 @app.route('/image', methods=['GET'])

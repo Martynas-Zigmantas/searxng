@@ -22,6 +22,17 @@
       "_DK4yUVpy.min.js"
     ]
   },
+  "_sxng-osm.min.css": {
+    "file": "sxng-osm.min.css",
+    "src": "_sxng-osm.min.css"
+  },
+  "_uAl61oBs.min.js": {
+    "file": "chunk/uAl61oBs.min.js",
+    "name": "osm",
+    "css": [
+      "sxng-osm.min.css"
+    ]
+  },
   "src/fonts/dm-serif-display-latin-400.woff2": {
     "file": "sxng-dm-serif-display-latin-400.woff2",
     "src": "src/fonts/dm-serif-display-latin-400.woff2"
@@ -47,6 +58,7 @@
       "src/js/main/autocomplete.ts",
       "src/js/main/results.ts",
       "src/js/main/library.ts",
+      "src/js/main/placeCard.ts",
       "src/js/main/preferences.ts",
       "src/js/main/history.ts"
     ]
@@ -83,7 +95,7 @@
     ]
   },
   "src/js/main/home.ts": {
-    "file": "chunk/LHHoblwo.min.js",
+    "file": "chunk/CqO_aR0i.min.js",
     "name": "home",
     "src": "src/js/main/home.ts",
     "isDynamicEntry": true,
@@ -108,6 +120,15 @@
     "name": "library",
     "src": "src/js/main/library.ts",
     "isDynamicEntry": true
+  },
+  "src/js/main/placeCard.ts": {
+    "file": "chunk/DhH_r_9G.min.js",
+    "name": "placecard",
+    "src": "src/js/main/placeCard.ts",
+    "isDynamicEntry": true,
+    "imports": [
+      "_uAl61oBs.min.js"
+    ]
   },
   "src/js/main/preferences.ts": {
     "file": "chunk/ZLVGF1LA.min.js",
@@ -162,15 +183,13 @@
     ]
   },
   "src/js/plugin/MapView.ts": {
-    "file": "chunk/DAKwL16e.min.js",
+    "file": "chunk/6n79pHR2.min.js",
     "name": "mapview",
     "src": "src/js/plugin/MapView.ts",
     "isDynamicEntry": true,
     "imports": [
-      "_BuurKv-k.min.js"
-    ],
-    "css": [
-      "sxng-mapview.min.css"
+      "_BuurKv-k.min.js",
+      "_uAl61oBs.min.js"
     ]
   },
   "src/js/util/accountSync.ts": {

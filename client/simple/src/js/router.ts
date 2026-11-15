@@ -67,6 +67,9 @@ ready(
     void import("./main/keyboard.ts");
     void import("./main/results.ts");
     void import("./main/library.ts");
+    if (document.querySelector(".infobox-place")) {
+      void import("./main/placeCard.ts");
+    }
     void import("./main/search.ts");
 
     if (settings.autocomplete) {

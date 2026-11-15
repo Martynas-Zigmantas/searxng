@@ -18,10 +18,26 @@ type News = {
   text: string;
   facts?: string[];
   links?: { label: string; url: string; icon: keyof typeof GLYPH; wide?: boolean }[];
-  visual?: "epistle-apps";
+  visual?: "epistle-apps" | "epistle-linux";
 };
 
 const NEWS: News[] = [
+  {
+    id: "2026-11-epistle-linux-accounts",
+    date: "November 2026",
+    title: "Epistle for Linux: all your mail in one app",
+    text: "Epistle for Linux is a real mail client now. Add your Gmail, iCloud, Outlook or any other email account next to your Epistle mailbox. The app connects to them itself, so their passwords never reach us.",
+    facts: [
+      "Gmail, iCloud, Outlook, Fastmail or any IMAP account",
+      "Switch accounts without signing out",
+      "Your own extra @epistle.email addresses"
+    ],
+    links: [
+      { label: "Get it for Linux", url: "https://www.epistle.email/linux", icon: "laptop", wide: true },
+      { label: "Visit www.epistle.email", url: "https://www.epistle.email/", icon: "globe", wide: true }
+    ],
+    visual: "epistle-linux"
+  },
   {
     id: "2026-10-epistle-apps",
     date: "October 2026",
@@ -90,7 +106,28 @@ const setHidden = (id: string | null): void => {
   }
 };
 
+// three of the distros Epistle for Linux ships for, as planets in a Linux-wallpaper night sky (static/img/whatsnew/distros,
+// Simple Icons, CC0); the class sets each one's colour and place
+const DISTROS: [string, string][] = [
+  ["ubuntu", "Ubuntu"],
+  ["archlinux", "Arch"],
+  ["fedora", "Fedora"]
+];
+
 const visual = (kind: News["visual"], root: HTMLElement): string => {
+  if (kind === "epistle-linux") {
+    const base = esc(root.dataset.newsDistros ?? "");
+    const sky = esc(root.dataset.newsSky ?? "");
+    const bubbles = DISTROS.map(
+      ([file, name]) =>
+        `<span class="home-news-bubble home-news-bubble-${file}" title="${esc(name)}"><img src="${base}${file}.svg" alt="" loading="eager" decoding="async"></span>`
+    ).join("");
+    return `<div class="home-news-hero home-news-hero-distros" style="background-image:url('${sky}')" aria-hidden="true">
+    <span class="home-news-badge home-news-badge-l">${GLYPH.laptop}Linux</span>
+    <span class="home-news-badge home-news-badge-r">Gmail · iCloud · IMAP</span>
+    ${bubbles}
+  </div>`;
+  }
   if (kind !== "epistle-apps") return "";
   const linux = esc(root.dataset.newsLinux ?? "");
   const android = esc(root.dataset.newsAndroid ?? "");
@@ -129,7 +166,7 @@ const renderCard = (news: HTMLElement, root: HTMLElement, place: () => void): vo
   news.innerHTML = `${visual(top.visual, root)}
     <div class="home-news-in">
       <span class="home-news-tag">What’s new</span>
-      <div class="home-news-head">${top.visual === "epistle-apps" ? GLYPH.epistle : ""}<div><h3>${esc(top.title)}</h3><small>${esc(top.date)}</small></div></div>
+      <div class="home-news-head">${top.visual ? GLYPH.epistle : ""}<div><h3>${esc(top.title)}</h3><small>${esc(top.date)}</small></div></div>
       <p class="home-news-text">${esc(top.text)}</p>
       ${facts}${links}
       ${earlier.length > 0 ? `<ul class="home-news-earlier" hidden>${older}</ul>` : ""}
