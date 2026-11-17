@@ -1,4 +1,8 @@
 {
+  "_BUlvVOH0.min.js": {
+    "file": "chunk/BUlvVOH0.min.js",
+    "name": "hours"
+  },
   "_BuurKv-k.min.js": {
     "file": "chunk/BuurKv-k.min.js",
     "name": "plugin"
@@ -11,8 +15,15 @@
     "file": "chunk/CFOOKra3.min.js",
     "name": "loading"
   },
-  "_D7cN5SnT.min.js": {
-    "file": "chunk/D7cN5SnT.min.js",
+  "_CPZokddU.min.js": {
+    "file": "chunk/CPZokddU.min.js",
+    "name": "geojson",
+    "imports": [
+      "_CYEAqcT6.min.js"
+    ]
+  },
+  "_CYEAqcT6.min.js": {
+    "file": "chunk/CYEAqcT6.min.js",
     "name": "mapstyle",
     "css": [
       "sxng-mapstyle.min.css"
@@ -27,13 +38,6 @@
     "name": "getelement",
     "imports": [
       "_DK4yUVpy.min.js"
-    ]
-  },
-  "_Dy3oGfLr.min.js": {
-    "file": "chunk/Dy3oGfLr.min.js",
-    "name": "geojson",
-    "imports": [
-      "_D7cN5SnT.min.js"
     ]
   },
   "_sxng-mapstyle.min.css": {
@@ -130,22 +134,24 @@
     "isDynamicEntry": true
   },
   "src/js/main/mapMode.ts": {
-    "file": "chunk/CqQrBMxH.min.js",
+    "file": "chunk/QSCzaTxD.min.js",
     "name": "mapmode",
     "src": "src/js/main/mapMode.ts",
     "isDynamicEntry": true,
     "imports": [
-      "_D7cN5SnT.min.js",
-      "_Dy3oGfLr.min.js"
+      "_CYEAqcT6.min.js",
+      "_CPZokddU.min.js",
+      "_BUlvVOH0.min.js"
     ]
   },
   "src/js/main/placeCard.ts": {
-    "file": "chunk/DxZRkm0f.min.js",
+    "file": "chunk/CTQCf3nA.min.js",
     "name": "placecard",
     "src": "src/js/main/placeCard.ts",
     "isDynamicEntry": true,
     "imports": [
-      "_D7cN5SnT.min.js"
+      "_CYEAqcT6.min.js",
+      "_BUlvVOH0.min.js"
     ]
   },
   "src/js/main/preferences.ts": {
@@ -201,14 +207,14 @@
     ]
   },
   "src/js/plugin/MapView.ts": {
-    "file": "chunk/DwureZY9.min.js",
+    "file": "chunk/D3QcvPoA.min.js",
     "name": "mapview",
     "src": "src/js/plugin/MapView.ts",
     "isDynamicEntry": true,
     "imports": [
       "_BuurKv-k.min.js",
-      "_D7cN5SnT.min.js",
-      "_Dy3oGfLr.min.js"
+      "_CYEAqcT6.min.js",
+      "_CPZokddU.min.js"
     ]
   },
   "src/js/util/accountSync.ts": {

@@ -8,6 +8,8 @@
   grows past TILE_CACHE_MAX (the least recently shown go first).
 - ``/widgets/vtile/<z>/<x>/<y>.pbf``  ->  the same for vector tiles (OpenFreeMap, map data the browser colours in
   Alexandria's own style), kept gzipped and sent gzipped.
+- ``/widgets/cards?ids=N…,W…``  ->  the Map tab's cards: kind of place, stars, hours, phone, website, photo (one
+  Nominatim lookup + one Wikidata request for the whole page, cached a day).
 - ``/widgets/place?name=<name>&qid=<Q…>&lat=<lat>&lon=<lon>&web=<official website>``  ->  what OpenStreetMap knows
   about it (kind of place, address, opening hours, phone, website): Nominatim searched for the name right around the
   coordinates (the object tagged with that Wikidata id, else the nearest match), else the address at the coordinates.
@@ -23,12 +25,15 @@ import re
 import tempfile
 import threading
 import time
-from urllib.parse import parse_qs, urlparse
+from urllib.parse import parse_qs, quote, urlparse
 
 import flask
 from flask.json import jsonify
 
+from searx import logger
 from searx.network import get as http_get
+
+log = logger.getChild("places")
 
 # OpenStreetMap's tile and Nominatim policies want a real name and a way to reach the operator
 USER_AGENT = "Alexandria/1.0 (+https://alexandria.epistle.email)"
@@ -495,6 +500,95 @@ def place():
     return response
 
 
+# ----------------------------------------------------------------------------------------------- Map tab cards
+
+NOMINATIM_LOOKUP_URL = "https://nominatim.openstreetmap.org/lookup"
+WIKIDATA_API_URL = "https://www.wikidata.org/w/api.php"
+OSM_REF = re.compile(r"^[NWR][0-9]{1,12}$")
+LOOKUP_MAX = 20
+_cards_cache: dict[str, tuple[float, dict]] = {}
+
+
+def _stars(value: str) -> int:
+    match = re.match(r"^([1-7])", value or "")
+    return int(match.group(1)) if match else 0
+
+
+def _card_info(found: dict) -> dict:
+    tags = found.get("extratags") or {}
+    kind = (found.get("type") or "").replace("_", " ")
+    if kind in ("yes", "attraction", "building"):
+        kind = (found.get("category") or "").replace("_", " ")
+    cuisine = (tags.get("cuisine") or "").split(";")[0].replace("_", " ")
+    if cuisine and kind in ("restaurant", "fast food", "cafe"):
+        kind = f"{cuisine} {kind}"
+    return {
+        "kind": kind[:1].upper() + kind[1:],
+        "stars": _stars(tags.get("stars", "")),
+        "hours": tags.get("opening_hours", ""),
+        "phone": tags.get("phone") or tags.get("contact:phone") or "",
+        "website": tags.get("website") or tags.get("contact:website") or "",
+        "wheelchair": tags.get("wheelchair", ""),
+        "wikidata": tags.get("wikidata", "") if QID.match(tags.get("wikidata", "")) else "",
+        "image": "",
+    }
+
+
+def _wikidata_photos(qids: list[str]) -> dict[str, str]:
+    """Q-id -> a Wikimedia Commons thumbnail of its picture (P18), in one Wikidata request."""
+    if not qids:
+        return {}
+    try:
+        resp = http_get(
+            WIKIDATA_API_URL,
+            params={"action": "wbgetentities", "ids": "|".join(qids), "props": "claims", "format": "json"},
+            headers={"User-Agent": USER_AGENT},
+            timeout=6,
+        )
+        entities = resp.json().get("entities", {}) if resp.status_code == 200 else {}
+    except Exception:  # pylint: disable=broad-except
+        return {}
+    photos = {}
+    for qid, entity in entities.items():
+        try:
+            name = entity["claims"]["P18"][0]["mainsnak"]["datavalue"]["value"]
+        except (KeyError, IndexError, TypeError):
+            continue
+        photos[qid] = (
+            "https://commons.wikimedia.org/wiki/Special:FilePath/" + quote(name.replace(" ", "_")) + "?width=240"
+        )
+    return photos
+
+
+def cards():
+    """``/widgets/cards?ids=N1,W2,…``: kind of place, stars, hours, phone, website, wheelchair, photo for the Map
+    tab's cards (main/mapMode.ts): one Nominatim lookup + one Wikidata request for all of them, cached a day."""
+    refs = [ref for ref in flask.request.args.get("ids", "").split(",") if OSM_REF.match(ref)][:LOOKUP_MAX]
+    now = time.time()
+    missing = [ref for ref in refs if ref not in _cards_cache or now - _cards_cache[ref][0] > PLACE_KEEP]
+    if missing:
+        try:
+            found = _nominatim(NOMINATIM_LOOKUP_URL, {"osm_ids": ",".join(missing), "extratags": 1})
+        except Exception as exc:  # pylint: disable=broad-except
+            log.warning("cards lookup failed: %s", exc)
+            found = None
+        if found is None:
+            # Nominatim down / slow: nothing remembered, the next search asks again
+            missing, found = [], []
+        infos = {f"{r.get('osm_type', ' ')[0].upper()}{r.get('osm_id')}": _card_info(r) for r in found}
+        photos = _wikidata_photos(sorted({i["wikidata"] for i in infos.values() if i["wikidata"]}))
+        for info in infos.values():
+            info["image"] = photos.get(info["wikidata"], "")
+        if len(_cards_cache) > PLACE_CACHE_MAX * 4:
+            _cards_cache.clear()
+        for ref in missing:
+            # not found is remembered too: no new request for it on every search
+            _cards_cache[ref] = (now, infos.get(ref, {}))
+    response = jsonify({ref: _cards_cache[ref][1] for ref in refs if ref in _cards_cache})
+    response.headers["Cache-Control"] = "private, max-age=3600"
+    return response
+
+
 def register(app: flask.Flask) -> None:
     app.jinja_env.filters["infobox_place"] = infobox_place  # pylint: disable=no-member
     app.add_url_rule(
@@ -504,3 +598,4 @@ def register(app: flask.Flask) -> None:
         "/widgets/vtile/<int:z>/<int:x>/<int:y>.pbf", methods=["GET"], endpoint="widgets_vtile", view_func=vtile
     )
     app.add_url_rule("/widgets/place", methods=["GET"], endpoint="widgets_place", view_func=place)
+    app.add_url_rule("/widgets/cards", methods=["GET"], endpoint="widgets_cards", view_func=cards)

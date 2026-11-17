@@ -4359,3 +4359,135 @@ html.map-mode #urls .result-map {
   border: 1px solid rgb(0 0 0 / 15%);
   border-radius: 50%;
 }
+
+// Map tab place cards (util/mapCards.ts): Google Maps style list entries
+html.map-mode #urls .result-map.map-card {
+  display: flex;
+  gap: 0.9rem;
+  align-items: flex-start;
+  padding: 0.95rem 0.95rem 0.95rem 3.1rem;
+
+  .map-num {
+    top: 1.05rem;
+  }
+
+  .map-card-main {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .map-card-title {
+    margin: 0 0 0.2rem;
+    color: var(--p-text);
+    font-size: 1.05rem;
+    font-weight: 600;
+    line-height: 1.3;
+  }
+
+  .map-card-meta,
+  .map-card-address,
+  .map-card-hours {
+    margin: 0 0 0.15rem;
+    color: var(--p-text-3);
+    font-size: 0.85rem;
+    line-height: 1.4;
+  }
+
+  .map-card-meta:empty {
+    display: none;
+  }
+
+  .map-card-stars {
+    color: #c9a24a;
+    letter-spacing: 0.05em;
+  }
+
+  .map-card-dot {
+    margin: 0 0.35rem;
+  }
+
+  .map-card-hours {
+    display: flex;
+    gap: 0.35rem;
+    align-items: flex-start;
+
+    &[hidden] {
+      display: none;
+    }
+
+    svg {
+      flex: 0 0 auto;
+      width: 0.95rem;
+      height: 0.95rem;
+      margin-top: 0.12rem;
+    }
+  }
+
+  .map-card-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-top: 0.6rem;
+  }
+
+  .map-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.35rem 0.75rem;
+    border: 1px solid var(--p-border);
+    border-radius: 99px;
+    color: var(--p-accent);
+    font-size: 0.8rem;
+    font-weight: 500;
+    text-decoration: none;
+
+    &:hover {
+      background: var(--p-accent-soft);
+    }
+
+    svg {
+      width: 0.95rem;
+      height: 0.95rem;
+    }
+  }
+
+  // text in the page colour: white on blue by day, dark on light blue at night
+  .map-chip-main {
+    border-color: var(--p-accent);
+    background: var(--p-accent);
+    color: var(--p-bg);
+
+    &:hover {
+      background: var(--p-accent);
+      filter: brightness(1.08);
+    }
+  }
+
+  .map-card-photo {
+    flex: 0 0 auto;
+    width: 6rem;
+    height: 6rem;
+    border-radius: 12px;
+    overflow: hidden;
+    background: var(--p-surface-2);
+
+    &[hidden] {
+      display: none;
+    }
+
+    img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+}
+
+@media screen and (max-width: @phone) {
+  html.map-mode #urls .result-map.map-card .map-card-photo {
+    width: 5rem;
+    height: 5rem;
+  }
+}

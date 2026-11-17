@@ -49,4 +49,12 @@
     <div id="result-map-{{ index }}" class="invisible"><div id="osm-map-{{ index }}" class="osm-map-box"></div></div>
 {%- endif %}
 
+{#- the Map tab rebuilds this result as a place card (main/mapMode.ts) from these -#}
+<script type="application/json" class="map-card-data">{{ {
+  "title": result.title,
+  "url": result.url,
+  "address": result.address or {},
+  "osm": result.osm or {},
+  "website": (result.links|selectattr("label", "equalto", "website")|map(attribute="url")|first) if result.links else "",
+} | tojson }}</script>
 {{- result_footer(result) }}

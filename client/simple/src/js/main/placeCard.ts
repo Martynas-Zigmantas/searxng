@@ -17,6 +17,7 @@ import { Vector as VectorLayer } from "ol/layer";
 import { fromLonLat, transformExtent } from "ol/proj";
 import { Vector as VectorSource } from "ol/source";
 import { Icon, Style } from "ol/style";
+import { hoursLines } from "../util/hours.ts";
 import { alexandriaLayer, currentLook } from "../util/mapStyle.ts";
 
 type Place = {
@@ -52,40 +53,9 @@ const PIN = `data:image/svg+xml;utf8,${encodeURIComponent(
 const esc = (text: string): string =>
   text.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c] ?? c);
 
-const DAYS: Record<string, string> = {
-  Mo: "Mon",
-  Tu: "Tue",
-  We: "Wed",
-  Th: "Thu",
-  Fr: "Fri",
-  Sa: "Sat",
-  Su: "Sun",
-  PH: "Holidays"
-};
 const SPACES = /\s+/g;
 const WEB_PREFIX = /^https?:\/\/(www\.)?/;
 const TRAILING_SLASH = /\/$/;
-const DAY_RANGE = /(\w{3})-(\w{3})/g;
-const OFF = /\boff\b/g;
-const DAY_CODE = /\b(Mo|Tu|We|Th|Fr|Sa|Su|PH)\b/g;
-const TIME_RANGE = /(\d{2}:\d{2})-(\d{2}:\d{2})/g;
-
-// OpenStreetMap's opening_hours ("Mo-Fr 09:00-17:00; Sa 10:00-14:00") as lines people read
-const hoursLines = (hours: string): string[] => {
-  if (hours.trim() === "24/7") return ["Open 24 hours"];
-  return hours
-    .split(";")
-    .map((part) =>
-      part
-        .trim()
-        .replace(TIME_RANGE, "$1–$2")
-        .replace(DAY_CODE, (code) => DAYS[code] ?? code)
-        .replace(DAY_RANGE, "$1–$2")
-        .replace(OFF, "closed")
-    )
-    .filter(Boolean)
-    .slice(0, 8);
-};
 
 const row = (icon: keyof typeof ICON, html: string): string =>
   `<div class="place-row">${glyph(icon)}<div>${html}</div></div>`;

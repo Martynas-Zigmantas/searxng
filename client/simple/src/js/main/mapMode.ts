@@ -20,6 +20,7 @@ import { fromLonLat, transformExtent } from "ol/proj";
 import { Vector as VectorSource } from "ol/source";
 import { getDistance } from "ol/sphere";
 import { Fill, Icon, Stroke, Style } from "ol/style";
+import { type CardData, cardKey, enrichCards, readCardData, renderCard } from "../util/mapCards.ts";
 import { alexandriaLayer, currentLook } from "../util/mapStyle.ts";
 
 const LOOK = currentLook();
@@ -98,17 +99,35 @@ if (mapEl) {
   document.documentElement.classList.add("map-mode");
   const cards = [...document.querySelectorAll<HTMLElement>("#urls article.result-map")];
   const places: Place[] = [];
+  const shown: { card: HTMLElement; data: CardData }[] = [];
+  const seen = new Set<string>();
   for (const card of cards) {
+    const data = readCardData(card);
+    if (data) {
+      // the same place twice (OpenStreetMap's point and its building): keep the first
+      const key = cardKey(data);
+      if (seen.has(key)) {
+        card.remove();
+        continue;
+      }
+      seen.add(key);
+    }
     const place = readPlace(card, places.length + 1);
     if (!place) continue;
     places.push(place);
     card.dataset.mapN = String(place.n);
-    const badge = document.createElement("span");
-    badge.className = "map-num";
-    badge.textContent = String(place.n);
-    badge.setAttribute("aria-hidden", "true");
-    card.prepend(badge);
+    if (data) {
+      renderCard(card, data, place.n, place.lat, place.lon);
+      shown.push({ card: card, data: data });
+    } else {
+      const badge = document.createElement("span");
+      badge.className = "map-num";
+      badge.textContent = String(place.n);
+      badge.setAttribute("aria-hidden", "true");
+      card.prepend(badge);
+    }
   }
+  if (mapEl.dataset.cards) void enrichCards(mapEl.dataset.cards, shown).catch(() => undefined);
 
   const [top] = places;
   if (top) {

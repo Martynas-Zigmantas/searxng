@@ -60,7 +60,7 @@
 
     {%- if only_template == 'only_template_map' -%}
     {#- Map tab: one big map with a numbered pin per result next to the list (main/mapMode.ts) -#}
-    <div id="map_view" data-vtiles="{{ url_for('widgets_vtile', z=0, x=0, y=0)|replace('0/0/0.pbf', '') }}" aria-label="{{ _('Map') }}"></div>
+    <div id="map_view" data-cards="{{ url_for('widgets_cards') }}" data-vtiles="{{ url_for('widgets_vtile', z=0, x=0, y=0)|replace('0/0/0.pbf', '') }}" aria-label="{{ _('Map') }}"></div>
     {%- endif %}
     <div id="urls" role="main">
     {% for result in results %}

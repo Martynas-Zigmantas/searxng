@@ -42,7 +42,7 @@ export type Palette = {
   poi: string;
   halo: string;
   waterLabel: string;
-  glow?: boolean; // neon: a soft wide halo under every road
+  neon?: boolean; // neon night: thin bright roads, no casing
   pin: string; // the result pins (main/mapMode.ts)
   pinInk: string;
 };
@@ -106,7 +106,7 @@ type Neon = {
   park: string;
 };
 
-// neon night: dark blocks with faint edges, glowing roads, pins in the road colour
+// neon night: dark blocks with faint edges, sharp bright roads, pins in the road colour
 const neon = (n: Neon): Palette => ({
   land: n.bg,
   water: n.water,
@@ -128,7 +128,7 @@ const neon = (n: Neon): Palette => ({
   poi: n.big,
   halo: n.bg,
   waterLabel: n.label,
-  glow: true,
+  neon: true,
   pin: n.road,
   pinInk: n.bg
 });
@@ -269,14 +269,10 @@ const styleFor = (c: Palette) => {
     };
     const [inner, outer] = colours[kind];
     const rank = RANK[kind];
-    if (c.glow) {
-      const core = Math.max(0.8, w * (kind === "minor" ? 0.35 : 0.5));
-      const solid = inner.slice(0, 7);
-      return [
-        new Style({ stroke: new Stroke({ color: `${solid}22`, width: core + 7, lineCap: "round" }), zIndex: rank }),
-        new Style({ stroke: new Stroke({ color: `${solid}55`, width: core + 3, lineCap: "round" }), zIndex: rank }),
-        new Style({ stroke: new Stroke({ color: inner, width: core, lineCap: "round" }), zIndex: rank + 1 })
-      ];
+    if (c.neon) {
+      // crisp neon lines on black (a blurred glow looked fuzzy at some zooms, Martynas 2026-11-17)
+      const core = Math.max(1, w * (kind === "minor" ? 0.45 : 0.6));
+      return [new Style({ stroke: new Stroke({ color: inner, width: core, lineCap: "round" }), zIndex: rank + 1 })];
     }
     return [
       new Style({ stroke: new Stroke({ color: outer, width: w + 1.6, lineCap: "round" }), zIndex: rank }),
