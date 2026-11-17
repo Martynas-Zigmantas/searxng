@@ -1,0 +1,35 @@
+{#- Alexandria: the map's look by day and by night (client util/mapStyle.ts); the swatches show road / ground / water -#}
+{%- set day_looks = [
+  ('blue', 'Blue roads', ['#5c9dff', '#eceff2', '#8ec5f0']),
+  ('gold', 'Gold roads', ['#ffcf3f', '#eceff2', '#8ec5f0']),
+  ('plum', 'Plum roads', ['#d27aa9', '#eceff2', '#8ec5f0']),
+  ('teal', 'Teal roads', ['#33bfa0', '#eceff2', '#8ec5f0']),
+  ('google', 'Yellow main roads', ['#ffd666', '#ffffff', '#8ec5f0']),
+  ('classic', 'Plain white', ['#ffffff', '#e6e5e2', '#8ec5f0']),
+] -%}
+{%- set night_looks = [
+  ('matrix', 'Matrix', ['#22ff6e', '#020604', '#b6ff3a']),
+  ('tron', 'Tron', ['#19e6ff', '#03060c', '#ff9e1a']),
+  ('synth', 'Synthwave', ['#ff2bd6', '#0d0221', '#19e6ff']),
+  ('uv', 'Ultraviolet', ['#b45cff', '#07020f', '#ff4fd8']),
+  ('aubergine', 'Aubergine', ['#8a6d2f', '#2a0a22', '#1b4f86']),
+] -%}
+{%- for pref, legend, looks in [('map_day', _('Map colours by day'), day_looks), ('map_night', _('Map colours at night'), night_looks)] -%}
+<fieldset>{{- '' -}}
+  <legend id="pref_{{ pref }}">{{- legend -}}</legend>{{- '' -}}
+  <div class="value">{{- '' -}}
+    <div class="map-looks" role="radiogroup" aria-labelledby="pref_{{ pref }}">
+      {%- for name, label, colours in looks -%}
+      <label class="map-look">
+        <input type="radio" name="{{ pref }}" value="{{ name }}" {%- if name == preferences.get_value(pref) %} checked{%- endif -%}>
+        <span class="map-look-swatch" aria-hidden="true" style="background:linear-gradient(135deg,{{ colours[1] }} 0 45%,{{ colours[0] }} 45% 62%,{{ colours[1] }} 62% 78%,{{ colours[2] }} 78%)"></span>
+        <span class="map-look-name">{{ label }}</span>
+      </label>
+      {%- endfor -%}
+    </div>
+  </div>{{- '' -}}
+  <div class="description">
+    {%- if pref == 'map_day' -%}{{ _('The Map tab and place cards in light mode') }}{%- else -%}{{ _('The Map tab and place cards in dark mode') }}{%- endif -%}
+  </div>{{- '' -}}
+</fieldset>{{- '' -}}
+{%- endfor -%}

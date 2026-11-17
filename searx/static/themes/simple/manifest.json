@@ -11,6 +11,13 @@
     "file": "chunk/CFOOKra3.min.js",
     "name": "loading"
   },
+  "_D7cN5SnT.min.js": {
+    "file": "chunk/D7cN5SnT.min.js",
+    "name": "mapstyle",
+    "css": [
+      "sxng-mapstyle.min.css"
+    ]
+  },
   "_DK4yUVpy.min.js": {
     "file": "chunk/DK4yUVpy.min.js",
     "name": "assertelement"
@@ -22,16 +29,16 @@
       "_DK4yUVpy.min.js"
     ]
   },
-  "_sxng-osm.min.css": {
-    "file": "sxng-osm.min.css",
-    "src": "_sxng-osm.min.css"
-  },
-  "_uAl61oBs.min.js": {
-    "file": "chunk/uAl61oBs.min.js",
-    "name": "osm",
-    "css": [
-      "sxng-osm.min.css"
+  "_Dy3oGfLr.min.js": {
+    "file": "chunk/Dy3oGfLr.min.js",
+    "name": "geojson",
+    "imports": [
+      "_D7cN5SnT.min.js"
     ]
+  },
+  "_sxng-mapstyle.min.css": {
+    "file": "sxng-mapstyle.min.css",
+    "src": "_sxng-mapstyle.min.css"
   },
   "src/fonts/dm-serif-display-latin-400.woff2": {
     "file": "sxng-dm-serif-display-latin-400.woff2",
@@ -57,6 +64,7 @@
       "src/js/main/home.ts",
       "src/js/main/autocomplete.ts",
       "src/js/main/results.ts",
+      "src/js/main/mapMode.ts",
       "src/js/main/library.ts",
       "src/js/main/placeCard.ts",
       "src/js/main/preferences.ts",
@@ -121,13 +129,23 @@
     "src": "src/js/main/library.ts",
     "isDynamicEntry": true
   },
+  "src/js/main/mapMode.ts": {
+    "file": "chunk/CqQrBMxH.min.js",
+    "name": "mapmode",
+    "src": "src/js/main/mapMode.ts",
+    "isDynamicEntry": true,
+    "imports": [
+      "_D7cN5SnT.min.js",
+      "_Dy3oGfLr.min.js"
+    ]
+  },
   "src/js/main/placeCard.ts": {
-    "file": "chunk/DhH_r_9G.min.js",
+    "file": "chunk/DxZRkm0f.min.js",
     "name": "placecard",
     "src": "src/js/main/placeCard.ts",
     "isDynamicEntry": true,
     "imports": [
-      "_uAl61oBs.min.js"
+      "_D7cN5SnT.min.js"
     ]
   },
   "src/js/main/preferences.ts": {
@@ -183,13 +201,14 @@
     ]
   },
   "src/js/plugin/MapView.ts": {
-    "file": "chunk/6n79pHR2.min.js",
+    "file": "chunk/DwureZY9.min.js",
     "name": "mapview",
     "src": "src/js/plugin/MapView.ts",
     "isDynamicEntry": true,
     "imports": [
       "_BuurKv-k.min.js",
-      "_uAl61oBs.min.js"
+      "_D7cN5SnT.min.js",
+      "_Dy3oGfLr.min.js"
     ]
   },
   "src/js/util/accountSync.ts": {

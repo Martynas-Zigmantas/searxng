@@ -4,11 +4,12 @@ import "ol/ol.css";
 import { Feature, Map as OlMap, View } from "ol";
 import { GeoJSON } from "ol/format";
 import { Point } from "ol/geom";
-import { Tile as TileLayer, Vector as VectorLayer } from "ol/layer";
+import { Vector as VectorLayer } from "ol/layer";
 import { fromLonLat } from "ol/proj";
-import { OSM, Vector as VectorSource } from "ol/source";
+import { Vector as VectorSource } from "ol/source";
 import { Circle, Fill, Stroke, Style } from "ol/style";
 import { Plugin } from "../Plugin.ts";
+import { alexandriaLayer, currentLook } from "../util/mapStyle.ts";
 
 /**
  * MapView
@@ -28,7 +29,7 @@ export default class MapView extends Plugin {
       mapLon = "0",
       mapLat = "0",
       mapGeojson,
-      mapTiles = "/widgets/tile/"
+      mapVtiles = "/widgets/vtile/"
     } = this.map.dataset;
 
     const lon = Number.parseFloat(mapLon);
@@ -36,8 +37,8 @@ export default class MapView extends Plugin {
     const view = new View({ maxZoom: 16, enableRotation: false });
     const map = new OlMap({
       target: target,
-      // tiles through this instance (searx/places.py): the browser never talks to OpenStreetMap
-      layers: [new TileLayer({ source: new OSM({ url: `${mapTiles}{z}/{x}/{y}.png`, maxZoom: 16 }) })],
+      // map data through this instance (searx/places.py), drawn in the visitor's map look (util/mapStyle.ts)
+      layers: [alexandriaLayer(mapVtiles)],
       view: view
     });
 
@@ -55,7 +56,7 @@ export default class MapView extends Plugin {
         style: new Style({
           image: new Circle({
             radius: 6,
-            fill: new Fill({ color: "#3050ff" })
+            fill: new Fill({ color: currentLook().pin })
           })
         })
       });

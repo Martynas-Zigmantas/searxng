@@ -467,6 +467,15 @@ class Preferences:
                 locked="simple_style" in self.cfg.lock,
                 choices=["", "auto", "light", "dark", "black"],
             ),
+            # Alexandria's map looks (client util/mapStyle.ts DAY_LOOKS / NIGHT_LOOKS); synced with an account
+            'map_day': EnumStringSetting(
+                'blue',
+                choices=['blue', 'gold', 'plum', 'teal', 'google', 'classic'],
+            ),
+            'map_night': EnumStringSetting(
+                'matrix',
+                choices=['matrix', 'tron', 'synth', 'uv', 'aubergine'],
+            ),
             'center_alignment': BooleanSetting(
                 get_setting("ui.center_alignment"),
                 locked="center_alignment" in self.cfg.lock,

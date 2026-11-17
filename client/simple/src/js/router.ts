@@ -66,7 +66,12 @@ ready(
   () => {
     void import("./main/keyboard.ts");
     void import("./main/results.ts");
-    void import("./main/library.ts");
+    if (document.querySelector("#map_view")) {
+      // Map tab: the map is the page, no library background behind it
+      void import("./main/mapMode.ts");
+    } else {
+      void import("./main/library.ts");
+    }
     if (document.querySelector(".infobox-place")) {
       void import("./main/placeCard.ts");
     }

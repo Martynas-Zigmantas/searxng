@@ -4093,3 +4093,269 @@ html.library-bg-on body.results_endpoint {
     }
   }
 }
+
+/// Map tab (main/mapMode.ts) -----------------------------------------------------
+// every result is a place: the list on the left, one big map with numbered pins on the right
+// (phones: the map on top, sticky, the list scrolling under it)
+
+#main_results div#results.only_template_map {
+  grid-template:
+    "corrections map" min-content
+    "answers map" min-content
+    "urls map" 1fr
+    "sidebar map" min-content
+    "pagination map" min-content
+    / minmax(0, 27rem) minmax(0, 1fr);
+  gap: 0 1.25rem;
+  .ltr-margin-right(1.25rem);
+  max-width: none;
+}
+
+#map_view {
+  grid-area: map;
+  position: sticky;
+  top: 0.75rem;
+  align-self: start;
+  height: calc(100vh - 1.5rem);
+  min-height: 22rem;
+  border: 1px solid var(--p-border);
+  border-radius: 18px;
+  overflow: hidden;
+  background: var(--p-surface-2);
+  box-shadow: var(--p-shadow-1);
+
+  .ol-zoom {
+    inset: 0.75rem 0.75rem auto auto;
+    background: none;
+
+    button {
+      width: 2.25rem;
+      height: 2.25rem;
+      margin: 0 0 0.35rem;
+      border-radius: 50%;
+      background: var(--p-bg);
+      color: var(--p-text);
+      box-shadow: var(--p-shadow-1);
+      font-size: 1.2rem;
+      cursor: pointer;
+    }
+  }
+
+  .ol-attribution {
+    right: 0;
+    bottom: 0;
+    border-radius: 6px 0 0;
+    background: rgb(255 255 255 / 80%);
+    font-size: 0.65rem;
+
+    button {
+      display: none;
+    }
+  }
+}
+
+.map-reset {
+  position: absolute;
+  top: 0.75rem;
+  .ltr-left(0.75rem);
+  z-index: 2;
+  padding: 0.45rem 0.95rem;
+  border: 0;
+  border-radius: 99px;
+  background: var(--p-bg);
+  color: var(--p-accent);
+  box-shadow: var(--p-shadow-1);
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.map-label {
+  max-width: 16rem;
+  padding: 0.35rem 0.7rem;
+  border-radius: 10px;
+  background: var(--p-bg);
+  color: var(--p-text);
+  box-shadow: var(--p-shadow-1);
+  font-size: 0.8rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  pointer-events: none;
+}
+
+html.map-mode #urls .result-map {
+  position: relative;
+  .ltr-padding-left(3.1rem);
+  padding-top: 0.8rem;
+  padding-bottom: 0.7rem;
+  border: 1px solid transparent;
+  cursor: pointer;
+
+  &:hover {
+    background: var(--p-surface-2);
+  }
+
+  // gold, like its pin
+  &.map-picked {
+    border-color: #c9a24a;
+    background: rgb(201 162 74 / 12%);
+  }
+
+  .map-num {
+    position: absolute;
+    top: 0.95rem;
+    .ltr-left(0.8rem);
+    display: grid;
+    place-items: center;
+    width: 1.6rem;
+    height: 1.6rem;
+    border-radius: 50%;
+    background: #4a1238;
+    color: #f4ebd6;
+    font-size: 0.8rem;
+    font-weight: 700;
+  }
+
+  &.map-picked .map-num {
+    background: #c9a24a;
+    color: #4a1238;
+  }
+
+  .url_header {
+    font-size: 0.8rem;
+  }
+
+  h3 {
+    margin: 0.1rem 0 0.35rem;
+    font-size: 1.1rem;
+  }
+
+  // the stock "show map" link and its little map: the big map does that now
+  .searxng_init_map,
+  [id^="result-map-"] {
+    display: none;
+  }
+
+  table {
+    display: block;
+    margin: 0;
+    font-size: 0.875rem;
+
+    tbody {
+      display: block;
+    }
+
+    tr {
+      display: flex;
+      gap: 0.6rem;
+      padding: 0.1rem 0;
+    }
+
+    th {
+      flex: 0 0 auto;
+      width: auto;
+      padding: 0;
+      color: var(--p-text-3);
+      font-weight: 400;
+
+      &::after {
+        content: ":";
+      }
+    }
+
+    td {
+      min-width: 0;
+      padding: 0;
+      overflow-wrap: anywhere;
+
+      br {
+        display: none;
+      }
+
+      span + span::before,
+      br + span::before {
+        content: " ";
+      }
+    }
+
+    // the address needs no label: it reads as one line under the name
+    tr:has([itemtype$="PostalAddress"]) th {
+      display: none;
+    }
+  }
+
+  .engines,
+  .cache_link,
+  .proxyfied_link {
+    font-size: 0.7rem;
+  }
+}
+
+@media screen and (max-width: @phone) {
+  #main_results div#results.only_template_map {
+    grid-template:
+      "map" min-content
+      "corrections" min-content
+      "answers" min-content
+      "urls" 1fr
+      "sidebar" min-content
+      "pagination" min-content
+      / 100%;
+    margin: 0.5rem 0 0;
+  }
+
+  // not sticky here: the search header already is
+  #map_view {
+    position: relative;
+    height: 45vh;
+    min-height: 16rem;
+    margin: 0 0.5rem 0.75rem;
+    border-radius: 0 0 18px 18px;
+  }
+}
+
+// Preferences -> Map colours (preferences/map_colours.html): a chip per look with a little swatch
+.map-looks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.map-look {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.8rem 0.35rem 0.4rem;
+  border: 1px solid var(--p-border);
+  border-radius: 99px;
+  font-size: 0.875rem;
+  cursor: pointer;
+
+  input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  &:has(input:checked) {
+    border-color: var(--p-accent);
+    background: var(--p-accent-soft);
+    color: var(--p-accent);
+    font-weight: 500;
+  }
+
+  &:has(input:focus-visible) {
+    outline: 2px solid var(--p-accent);
+    outline-offset: 2px;
+  }
+}
+
+.map-look-swatch {
+  width: 1.6rem;
+  height: 1.6rem;
+  border: 1px solid rgb(0 0 0 / 15%);
+  border-radius: 50%;
+}

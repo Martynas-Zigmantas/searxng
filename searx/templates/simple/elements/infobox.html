@@ -1,7 +1,7 @@
 {%- set place = infobox|infobox_place -%}
 <aside class="infobox{% if place %} infobox-place{% endif %}" aria-label="{{ infobox.infobox }}">
   {%- if place -%}
-    <div class="place-map" data-lat="{{ place.lat }}" data-lon="{{ place.lon }}" data-zoom="{{ place.zoom }}" data-tiles="{{ url_for('widgets_tile', z=0, x=0, y=0)|replace('0/0/0.png', '') }}"></div>
+    <div class="place-map" data-lat="{{ place.lat }}" data-lon="{{ place.lon }}" data-zoom="{{ place.zoom }}" data-vtiles="{{ url_for('widgets_vtile', z=0, x=0, y=0)|replace('0/0/0.pbf', '') }}"></div>
   {%- endif -%}
   <h2 class="title"><bdi>{{ infobox.infobox }}</bdi></h2>
   {%- if place -%}

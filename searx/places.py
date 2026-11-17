@@ -6,6 +6,8 @@
 - ``/widgets/tile/<z>/<x>/<y>.png``  ->  an OpenStreetMap map tile, through this instance: the browser never talks
   to OpenStreetMap.  Only the tiles somebody looks at are fetched, then kept on disk for TILE_KEEP; the folder never
   grows past TILE_CACHE_MAX (the least recently shown go first).
+- ``/widgets/vtile/<z>/<x>/<y>.pbf``  ->  the same for vector tiles (OpenFreeMap, map data the browser colours in
+  Alexandria's own style), kept gzipped and sent gzipped.
 - ``/widgets/place?name=<name>&qid=<Q…>&lat=<lat>&lon=<lon>&web=<official website>``  ->  what OpenStreetMap knows
   about it (kind of place, address, opening hours, phone, website): Nominatim searched for the name right around the
   coordinates (the object tagged with that Wikidata id, else the nearest match), else the address at the coordinates.
@@ -15,6 +17,7 @@
 
 from __future__ import annotations
 
+import gzip
 import os
 import re
 import tempfile
@@ -34,6 +37,10 @@ TILE_URL = "https://tile.openstreetmap.org/{z}/{x}/{y}.png"
 TILE_MAX_ZOOM = 18
 TILE_KEEP = 14 * 86400
 TILE_CACHE_MAX = 200 * 1024 * 1024
+# map data for our own map style: OpenFreeMap (OpenStreetMap in the OpenMapTiles schema, free, no key, no limits)
+VECTOR_TILEJSON = "https://tiles.openfreemap.org/planet"
+VECTOR_MAX_ZOOM = 14  # deeper zooms reuse the z14 tile (over-zoom)
+_vector_state: dict = {"url": None, "at": 0.0}
 _tile_lock = threading.Lock()
 _tile_state: dict = {"bytes": None}
 
@@ -130,11 +137,9 @@ def _tile_added(root: str, size: int) -> None:
         _tile_state["bytes"] = total
 
 
-def tile(z: int, x: int, y: int):  # pylint: disable=invalid-name
-    if not (0 <= z <= TILE_MAX_ZOOM and 0 <= x < 2**z and 0 <= y < 2**z):
-        return flask.Response(status=404)
+def _cached_tile(path: str, url: str, accept, mimetype: str, gzipped: bool = False, trim=lambda raw: raw):
+    """A tile from the disk cache (fresh for TILE_KEEP), else fetched from ``url`` and kept."""
     root = _tile_dir()
-    path = os.path.join(root, str(z), str(x), f"{y}.png")
     data = stale = None
     try:
         fresh = time.time() - os.stat(path).st_mtime < TILE_KEEP
@@ -147,25 +152,226 @@ def tile(z: int, x: int, y: int):  # pylint: disable=invalid-name
         data = None
     if data is None:
         try:
-            resp = http_get(TILE_URL.format(z=z, x=x, y=y), headers={"User-Agent": USER_AGENT}, timeout=8)
-            ok = resp.status_code == 200 and resp.headers.get("content-type", "").startswith("image/")
+            resp = http_get(url, headers={"User-Agent": USER_AGENT}, timeout=8)
+            good = resp.status_code == 200 and accept(resp)
         except Exception:  # pylint: disable=broad-except
-            ok = False
-        if not ok:
-            # OpenStreetMap unreachable: an old copy beats a hole in the map
-            return flask.Response(stale, mimetype="image/png") if stale else flask.Response(status=502)
-        data = resp.content
-        try:
-            os.makedirs(os.path.dirname(path), exist_ok=True)
-            with open(path + ".tmp", "wb") as f:
-                f.write(data)
-            os.replace(path + ".tmp", path)
-            _tile_added(root, len(data))
-        except OSError:
-            pass
-    response = flask.Response(data, mimetype="image/png")
+            good = False
+        if not good:
+            # the source unreachable: an old copy beats a hole in the map
+            if not stale:
+                return flask.Response(status=502)
+            data = stale
+        else:
+            data = gzip.compress(trim(resp.content), 9) if gzipped else resp.content
+            try:
+                os.makedirs(os.path.dirname(path), exist_ok=True)
+                with open(path + ".tmp", "wb") as f:
+                    f.write(data)
+                os.replace(path + ".tmp", path)
+                _tile_added(root, len(data))
+            except OSError:
+                pass
+    response = flask.Response(data, mimetype=mimetype)
+    if gzipped:
+        response.headers["Content-Encoding"] = "gzip"
     response.headers["Cache-Control"] = "public, max-age=604800"
     return response
+
+
+def tile(z: int, x: int, y: int):  # pylint: disable=invalid-name
+    if not (0 <= z <= TILE_MAX_ZOOM and 0 <= x < 2**z and 0 <= y < 2**z):
+        return flask.Response(status=404)
+    return _cached_tile(
+        os.path.join(_tile_dir(), str(z), str(x), f"{y}.png"),
+        TILE_URL.format(z=z, x=x, y=y),
+        lambda resp: resp.headers.get("content-type", "").startswith("image/"),
+        "image/png",
+    )
+
+
+def _vector_tiles_url() -> str | None:
+    """OpenFreeMap's tile URL carries the week's build; ask its TileJSON, at most once a day."""
+    now = time.time()
+    if _vector_state["url"] and now - _vector_state["at"] < 86400:
+        return _vector_state["url"]
+    try:
+        resp = http_get(VECTOR_TILEJSON, headers={"User-Agent": USER_AGENT}, timeout=8)
+        _vector_state["url"] = resp.json()["tiles"][0]
+        _vector_state["at"] = now
+    except Exception:  # pylint: disable=broad-except
+        pass
+    return _vector_state["url"]
+
+
+# ---- trimming: a full OpenFreeMap tile carries every shop and ~100 translations of every name (80 KB at z14).
+# Keep only the layers and properties mapStyle.ts draws: about a quarter of the bytes.
+
+VECTOR_KEEP: dict[str, tuple[str, ...]] = {
+    "water": ("class",),
+    "waterway": ("class",),
+    "landcover": ("class",),
+    "landuse": ("class",),
+    "park": ("class",),
+    "boundary": ("admin_level", "maritime"),
+    "building": (),
+    "transportation": ("class", "brunnel"),
+    "transportation_name": ("name", "class"),
+    "place": ("name", "class", "rank"),
+    "water_name": ("name", "class"),
+    "poi": ("name", "class", "rank"),
+}
+POI_MAX_RANK = 4  # only the landmarks: OpenMapTiles ranks POIs per tile, 1 = most important
+# footways, tracks, driveways and car parks: half the bytes of a city-centre tile, and clutter
+ROAD_DROP = {b"path", b"track", b"service", b"bridleway", b"cycleway", b"footway", b"steps", b"pier"}
+
+
+def _varint(buf: bytes, pos: int) -> tuple[int, int]:
+    value = shift = 0
+    while True:
+        byte = buf[pos]
+        pos += 1
+        value |= (byte & 0x7F) << shift
+        shift += 7
+        if byte < 0x80:
+            return value, pos
+
+
+def _fields(buf: bytes):
+    """(field number, wire type, value) of a protobuf message."""
+    pos = 0
+    while pos < len(buf):
+        key, pos = _varint(buf, pos)
+        num, wire = key >> 3, key & 7
+        if wire == 0:
+            value, pos = _varint(buf, pos)
+        elif wire == 2:
+            size, pos = _varint(buf, pos)
+            value, pos = buf[pos : pos + size], pos + size
+        elif wire in (1, 5):
+            size = 8 if wire == 1 else 4
+            value, pos = buf[pos : pos + size], pos + size
+        else:
+            raise ValueError("bad wire type")
+        yield num, wire, value
+
+
+def _enc_varint(num: int) -> bytes:
+    out = bytearray()
+    while True:
+        byte = num & 0x7F
+        num >>= 7
+        if num:
+            out.append(byte | 0x80)
+        else:
+            out.append(byte)
+            return bytes(out)
+
+
+def _field(num: int, wire: int, value) -> bytes:
+    if wire == 0:
+        return _enc_varint(num << 3) + _enc_varint(value)
+    if wire == 2:
+        return _enc_varint(num << 3 | 2) + _enc_varint(len(value)) + value
+    return _enc_varint(num << 3 | wire) + value
+
+
+def _packed(buf: bytes) -> list[int]:
+    out, pos = [], 0
+    while pos < len(buf):
+        value, pos = _varint(buf, pos)
+        out.append(value)
+    return out
+
+
+def _value_number(raw: bytes) -> float | None:
+    for num, wire, value in _fields(raw):
+        if wire == 0:
+            return float(value >> 1 ^ -(value & 1)) if num == 6 else float(value)
+    return None
+
+
+def _keep_feature(layer: str, pairs: list[tuple[int, int]], keys: list[str], values: list[bytes]) -> bool:
+    """Drop footpaths & co. from the roads, and every POI but the landmarks."""
+    if layer in ("transportation", "transportation_name"):
+        cls = next((values[vi] for ki, vi in pairs if keys[ki] == "class"), b"")
+        return not any(_field(1, 2, drop) == cls for drop in ROAD_DROP)
+    if layer == "poi":
+        rank = next((_value_number(values[vi]) for ki, vi in pairs if keys[ki] == "rank"), None)
+        return rank is not None and rank <= POI_MAX_RANK
+    return True
+
+
+def _trim_layer(raw: bytes) -> bytes | None:
+    name, keys, values, feats, rest = "", [], [], [], []
+    for num, wire, value in _fields(raw):
+        if num == 2:
+            feats.append(value)
+        elif num == 3:
+            keys.append(value.decode())
+        elif num == 4:
+            values.append(value)
+        else:
+            if num == 1:
+                name = value.decode()
+            rest.append((num, wire, value))
+    if name not in VECTOR_KEEP:
+        return None
+    wanted = VECTOR_KEEP[name]
+    new_keys: dict[int, int] = {}
+    new_values: dict[int, int] = {}
+    out_feats = []
+    for feat in feats:
+        parts = list(_fields(feat))
+        tags = next((_packed(v) for n, _, v in parts if n == 2), [])
+        pairs = [(tags[i], tags[i + 1]) for i in range(0, len(tags) - 1, 2) if keys[tags[i]] in wanted]
+        if not _keep_feature(name, pairs, keys, values):
+            continue
+        packed = b"".join(
+            _enc_varint(new_keys.setdefault(ki, len(new_keys)))
+            + _enc_varint(new_values.setdefault(vi, len(new_values)))
+            for ki, vi in pairs
+        )
+        body = b"".join(_field(n, w, v) for n, w, v in parts if n not in (1, 2))  # feature ids: not needed
+        out_feats.append(body + (_field(2, 2, packed) if packed else b""))
+    if not out_feats:
+        return None
+    out = b"".join(_field(n, w, v) for n, w, v in rest)
+    out += b"".join(_field(2, 2, feat) for feat in out_feats)
+    out += b"".join(_field(3, 2, keys[k].encode()) for k in sorted(new_keys, key=new_keys.__getitem__))
+    out += b"".join(_field(4, 2, values[v]) for v in sorted(new_values, key=new_values.__getitem__))
+    return out
+
+
+def trim_vector_tile(raw: bytes) -> bytes:
+    """Only the layers / properties our style uses (VECTOR_KEEP); on anything unexpected the tile as it came."""
+    try:
+        out = b""
+        for num, _, value in _fields(raw):
+            if num == 3:
+                layer = _trim_layer(value)
+                if layer is not None:
+                    out += _field(3, 2, layer)
+        return out
+    except Exception:  # pylint: disable=broad-except
+        return raw
+
+
+def vtile(z: int, x: int, y: int):  # pylint: disable=invalid-name
+    """A vector tile (map data, not a picture): the browser colours it in Alexandria's own style (main/mapStyle.ts)."""
+    if not (0 <= z <= VECTOR_MAX_ZOOM and 0 <= x < 2**z and 0 <= y < 2**z):
+        return flask.Response(status=404)
+    url = _vector_tiles_url()
+    path = os.path.join(_tile_dir(), "v", str(z), str(x), f"{y}.pbf.gz")
+    if not url and not os.path.exists(path):
+        return flask.Response(status=502)
+    return _cached_tile(
+        path,
+        (url or "").format(z=z, x=x, y=y),
+        lambda resp: "vector-tile" in resp.headers.get("content-type", "") or resp.content[:1] != b"<",
+        "application/vnd.mapbox-vector-tile",
+        gzipped=True,
+        trim=trim_vector_tile,
+    )
 
 
 # ----------------------------------------------------------------------------------------------- place details
@@ -293,5 +499,8 @@ def register(app: flask.Flask) -> None:
     app.jinja_env.filters["infobox_place"] = infobox_place  # pylint: disable=no-member
     app.add_url_rule(
         "/widgets/tile/<int:z>/<int:x>/<int:y>.png", methods=["GET"], endpoint="widgets_tile", view_func=tile
+    )
+    app.add_url_rule(
+        "/widgets/vtile/<int:z>/<int:x>/<int:y>.pbf", methods=["GET"], endpoint="widgets_vtile", view_func=vtile
     )
     app.add_url_rule("/widgets/place", methods=["GET"], endpoint="widgets_place", view_func=place)

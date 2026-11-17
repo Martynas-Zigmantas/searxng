@@ -4,8 +4,8 @@
  * The place card (elements/infobox.html, searx/places.py): a knowledge panel
  * with coordinates gets a map on top and what OpenStreetMap knows about the
  * place under its name (kind of place, address, opening hours, phone,
- * website, directions).  Map tiles come through this instance
- * (/widgets/tile), so the browser never talks to OpenStreetMap.
+ * website, directions).  Map data comes through this instance
+ * (/widgets/vtile), drawn in the visitor's map look (util/mapStyle.ts).
  */
 
 import "ol/ol.css";
@@ -13,10 +13,11 @@ import { Feature, Map as OlMap, View } from "ol";
 import { defaults as defaultControls } from "ol/control";
 import { Point } from "ol/geom";
 import { defaults as defaultInteractions } from "ol/interaction";
-import { Tile as TileLayer, Vector as VectorLayer } from "ol/layer";
+import { Vector as VectorLayer } from "ol/layer";
 import { fromLonLat, transformExtent } from "ol/proj";
-import { OSM, Vector as VectorSource } from "ol/source";
+import { Vector as VectorSource } from "ol/source";
 import { Icon, Style } from "ol/style";
+import { alexandriaLayer, currentLook } from "../util/mapStyle.ts";
 
 type Place = {
   kind: string;
@@ -42,9 +43,10 @@ const ICON = {
 const glyph = (name: keyof typeof ICON): string =>
   `<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${ICON[name]}</svg>`;
 
-// the pin on the map, in Alexandria's plum
+// the pin on the map, in the map look's colour (Alexandria's plum by day)
+const LOOK = currentLook();
 const PIN = `data:image/svg+xml;utf8,${encodeURIComponent(
-  '<svg xmlns="http://www.w3.org/2000/svg" width="34" height="44" viewBox="0 0 34 44"><path d="M17 43s15-13.4 15-26A15 15 0 0 0 2 17c0 12.6 15 26 15 26z" fill="#4A1238" stroke="#fff" stroke-width="2.5"/><circle cx="17" cy="17" r="5.5" fill="#F4EBD6"/></svg>'
+  `<svg xmlns="http://www.w3.org/2000/svg" width="34" height="44" viewBox="0 0 34 44"><path d="M17 43s15-13.4 15-26A15 15 0 0 0 2 17c0 12.6 15 26 15 26z" fill="${LOOK.pin}" stroke="#fff" stroke-width="2.5"/><circle cx="17" cy="17" r="5.5" fill="${LOOK.pinInk}"/></svg>`
 )}`;
 
 const esc = (text: string): string =>
@@ -135,10 +137,8 @@ const showMap = (el: HTMLElement): View | undefined => {
   new OlMap({
     target: el,
     layers: [
-      // OSM() keeps the "© OpenStreetMap contributors" credit its licence asks for
-      new TileLayer({
-        source: new OSM({ url: `${el.dataset.tiles ?? "/widgets/tile/"}{z}/{x}/{y}.png`, maxZoom: 18 })
-      }),
+      // Alexandria's own look (util/mapStyle.ts): vector tiles through this instance, coloured here
+      alexandriaLayer(el.dataset.vtiles ?? "/widgets/vtile/", LOOK),
       new VectorLayer({ source: new VectorSource({ features: [pin] }) })
     ],
     // scrolling the page over the map scrolls the page; zoom with the buttons, pinch or a double click
